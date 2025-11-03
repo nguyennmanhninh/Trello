@@ -1,0 +1,125 @@
+# ============================================
+# Student Management System - .gitignore
+# ============================================
+
+## Build Artifacts
+bin/
+obj/
+out/
+publish/
+*.dll
+*.exe
+*.pdb
+
+## Visual Studio
+.vs/
+.vscode/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+*.userprefs
+
+## ASP.NET Core
+appsettings.Development.json
+appsettings.Production.json
+*.db
+*.db-shm
+*.db-wal
+
+## Node.js (Angular)
+node_modules/
+dist/
+.angular/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+yarn.lock
+
+## Logs and Databases
+*.log
+*.sqlite
+*.db
+
+## Temporary Files
+*.tmp
+*.temp
+*.bak
+*.backup
+*.old
+*~
+.DS_Store
+Thumbs.db
+
+## Test & Debug Files
+*.http
+*-test.ps1
+*-test.sql
+test-*.ps1
+test-*.sql
+test-*.http
+check-*.ps1
+check-*.sql
+verify-*.ps1
+debug-*.ps1
+*.result.txt
+*-result.txt
+session-data.txt
+attendance-check-result.txt
+
+## Sample Data
+students_data.csv
+sample_data.csv
+*.csv.backup
+
+## Archive & Deprecated
+Archive/
+*_OLD_*/
+*_DEPRECATED/
+*.deprecated
+
+## Environment & Secrets
+.env
+.env.local
+.env.production
+appsettings.*.json
+!appsettings.json
+Local_SQLServer_Connection.json
+
+## Angular specific
+ClientApp/.angular/
+ClientApp/dist/
+ClientApp/node_modules/
+ClientApp/coverage/
+ClientApp/.editorconfig
+
+## Database outputs
+Database/*result*.txt
+Database/*output*.txt
+Database/sp_*.txt
+Database/insert_*.txt
+Database/db_*.txt
+
+## Python (if any)
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+ENV/
+.Python
+
+## IDEs
+*.swp
+*.swo
+.idea/
+*.iml
+
+## OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db

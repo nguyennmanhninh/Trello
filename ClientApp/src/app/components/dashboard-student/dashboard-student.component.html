@@ -1,0 +1,143 @@
+<div class="dashboard-student">
+  <div class="dashboard-header">
+    <h1>Dashboard Sinh viên</h1>
+    <p class="subtitle">Thông tin học tập và điểm số của bạn</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-container">
+    <p class="error-message">{{ error }}</p>
+    <button class="btn-retry" (click)="loadDashboardData()">Thử lại</button>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!loading && !error" class="dashboard-content">
+    
+    <!-- Summary Cards -->
+    <div class="summary-grid">
+      <div class="summary-card card-class">
+        <div class="card-icon">🏫</div>
+        <div class="card-info">
+          <h3>{{ studentClass?.className || 'Chưa có lớp' }}</h3>
+          <p>Lớp học</p>
+          <small *ngIf="studentClass">{{ studentClass.departmentName }}</small>
+        </div>
+      </div>
+
+      <div class="summary-card card-average">
+        <div class="card-icon">📊</div>
+        <div class="card-info">
+          <h3 [ngClass]="getScoreClass(averageScore)">{{ averageScore | number:'1.2-2' }}</h3>
+          <p>Điểm trung bình</p>
+        </div>
+      </div>
+
+      <div class="summary-card card-courses">
+        <div class="card-icon">📚</div>
+        <div class="card-info">
+          <h3>{{ studentGrades.length }}</h3>
+          <p>Môn học đã có điểm</p>
+        </div>
+      </div>
+
+      <div class="summary-card card-credits">
+        <div class="card-icon">🎓</div>
+        <div class="card-info">
+          <h3>{{ totalCredits }}</h3>
+          <p>Tổng tín chỉ</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Grade Chart -->
+    <div *ngIf="studentGrades.length > 0" class="chart-section">
+      <div class="chart-container">
+        <canvas id="gradeChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Grades Table -->
+    <div class="grades-section">
+      <div class="section-header">
+        <h2>📝 Bảng điểm</h2>
+        <a [routerLink]="['/grades']" class="view-all-link">Xem chi tiết →</a>
+      </div>
+
+      <div *ngIf="studentGrades.length === 0" class="empty-state">
+        <p>Bạn chưa có điểm nào</p>
+      </div>
+
+      <div *ngIf="studentGrades.length > 0" class="grades-table-container">
+        <table class="grades-table">
+          <thead>
+            <tr>
+              <th>Môn học</th>
+              <th class="text-center">Tín chỉ</th>
+              <th class="text-center">Điểm</th>
+              <th class="text-center">Xếp loại</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr *ngFor="let grade of studentGrades">
+              <td>
+                <strong>{{ grade.courseName }}</strong>
+              </td>
+              <td class="text-center">
+                <span class="badge badge-credits">{{ grade.credits }}</span>
+              </td>
+              <td class="text-center">
+                <span class="score-badge" [ngClass]="getScoreClass(grade.score)">
+                  {{ grade.score | number:'1.2-2' }}
+                </span>
+              </td>
+              <td class="text-center">
+                <span class="classification-badge" [ngClass]="getClassificationClass(grade.classification)">
+                  {{ grade.classification }}
+                </span>
+              </td>
+            </tr>
+          </tbody>
+          <tfoot>
+            <tr class="summary-row">
+              <td><strong>Tổng kết</strong></td>
+              <td class="text-center"><strong>{{ totalCredits }}</strong></td>
+              <td class="text-center">
+                <strong [ngClass]="getScoreClass(averageScore)">{{ averageScore | number:'1.2-2' }}</strong>
+              </td>
+              <td class="text-center">
+                <span class="classification-badge" [ngClass]="getClassificationClass(getOverallClassification())">
+                  {{ getOverallClassification() }}
+                </span>
+              </td>
+            </tr>
+          </tfoot>
+        </table>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <h2>Thao tác nhanh</h2>
+      <div class="actions-grid">
+        <button class="action-btn" [routerLink]="['/grades']">
+          <span class="action-icon">📊</span>
+          <span>Xem chi tiết điểm</span>
+        </button>
+        <button class="action-btn" [routerLink]="['/profile']">
+          <span class="action-icon">👤</span>
+          <span>Thông tin cá nhân</span>
+        </button>
+        <button class="action-btn" [routerLink]="['/courses']">
+          <span class="action-icon">📚</span>
+          <span>Xem môn học</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

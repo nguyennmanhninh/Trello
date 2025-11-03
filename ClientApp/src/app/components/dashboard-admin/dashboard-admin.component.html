@@ -1,0 +1,104 @@
+<div class="dashboard-admin">
+  <div class="dashboard-header">
+    <h1>Dashboard Admin</h1>
+    <p class="subtitle">Tổng quan hệ thống quản lý sinh viên</p>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error" class="error-container">
+    <p class="error-message">{{ error }}</p>
+    <button class="btn-retry" (click)="loadDashboardData()">Thử lại</button>
+  </div>
+
+  <!-- Dashboard Content -->
+  <div *ngIf="!loading && !error" class="dashboard-content">
+    
+    <!-- Stats Cards -->
+    <div class="stats-grid">
+      <div class="stat-card stat-students">
+        <div class="stat-icon">👨‍🎓</div>
+        <div class="stat-info">
+          <h3>{{ stats.totalStudents }}</h3>
+          <p>Tổng sinh viên</p>
+        </div>
+        <a [routerLink]="['/students']" class="stat-link">Xem chi tiết →</a>
+      </div>
+
+      <div class="stat-card stat-teachers">
+        <div class="stat-icon">👨‍🏫</div>
+        <div class="stat-info">
+          <h3>{{ stats.totalTeachers }}</h3>
+          <p>Tổng giảng viên</p>
+        </div>
+        <a [routerLink]="['/teachers']" class="stat-link">Xem chi tiết →</a>
+      </div>
+
+      <div class="stat-card stat-classes">
+        <div class="stat-icon">🏫</div>
+        <div class="stat-info">
+          <h3>{{ stats.totalClasses }}</h3>
+          <p>Tổng lớp học</p>
+        </div>
+        <a [routerLink]="['/classes']" class="stat-link">Xem chi tiết →</a>
+      </div>
+
+      <div class="stat-card stat-courses">
+        <div class="stat-icon">📚</div>
+        <div class="stat-info">
+          <h3>{{ stats.totalCourses }}</h3>
+          <p>Tổng môn học</p>
+        </div>
+        <a [routerLink]="['/courses']" class="stat-link">Xem chi tiết →</a>
+      </div>
+
+      <div class="stat-card stat-departments">
+        <div class="stat-icon">🏢</div>
+        <div class="stat-info">
+          <h3>{{ stats.totalDepartments }}</h3>
+          <p>Tổng khoa</p>
+        </div>
+        <a [routerLink]="['/departments']" class="stat-link">Xem chi tiết →</a>
+      </div>
+    </div>
+
+    <!-- Charts Section -->
+    <div class="charts-grid">
+      <div class="chart-container">
+        <canvas id="studentsByClassChart"></canvas>
+      </div>
+
+      <div class="chart-container">
+        <canvas id="studentsByDepartmentChart"></canvas>
+      </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="quick-actions">
+      <h2>Thao tác nhanh</h2>
+      <div class="actions-grid">
+        <button class="action-btn" (click)="openStudentModal()">
+          <span class="action-icon">➕</span>
+          <span>Thêm sinh viên</span>
+        </button>
+        <button class="action-btn" (click)="openTeacherModal()">
+          <span class="action-icon">➕</span>
+          <span>Thêm giảng viên</span>
+        </button>
+        <button class="action-btn" (click)="openClassModal()">
+          <span class="action-icon">➕</span>
+          <span>Thêm lớp học</span>
+        </button>
+        <button class="action-btn" [routerLink]="['/grades']">
+          <span class="action-icon">📊</span>
+          <span>Quản lý điểm</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

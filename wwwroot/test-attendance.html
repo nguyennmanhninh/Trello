@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Student Attendance API</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            max-width: 1200px;
+            margin: 20px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 { color: #333; }
+        button {
+            background: #007bff;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover { background: #0056b3; }
+        #result {
+            margin-top: 20px;
+            padding: 15px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            white-space: pre-wrap;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+        }
+        .success { color: #28a745; }
+        .error { color: #dc3545; }
+        .info { color: #17a2b8; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Student Attendance API</h1>
+        
+        <div>
+            <button onclick="testLogin()">1. Login as ttbinh</button>
+            <button onclick="testAttendance()">2. Get Attendance Records</button>
+            <button onclick="testStats()">3. Get Statistics</button>
+            <button onclick="clearResult()">Clear</button>
+        </div>
+        
+        <div id="result"></div>
+    </div>
+
+    <script>
+        const API_BASE = 'http://localhost:5298/api';
+        let studentId = null;
+
+        function log(message, type = 'info') {
+            const result = document.getElementById('result');
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+            result.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            result.scrollTop = result.scrollHeight;
+        }
+
+        function clearResult() {
+            document.getElementById('result').innerHTML = '';
+        }
+
+        async function testLogin() {
+            try {
+                log('🔐 Logging in as ttbinh...', 'info');
+                
+                const response = await fetch(`${API_BASE}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    credentials: 'include', // Important for session cookies
+                    body: JSON.stringify({
+                        username: 'ttbinh',
+                        password: 'ttbinh'
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    studentId = data.entityId;
+                    log(`✅ Login successful!`, 'success');
+                    log(`   User: ${data.fullName} (${data.role})`, 'info');
+                    log(`   EntityId: ${data.entityId}`, 'info');
+                    log(`   Username: ${data.username}`, 'info');
+                } else {
+                    log(`❌ Login failed: ${data.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testAttendance() {
+            if (!studentId) {
+                log('⚠️ Please login first!', 'error');
+                return;
+            }
+
+            try {
+                log(`\n📚 Fetching attendance records for ${studentId}...`, 'info');
+                
+                const response = await fetch(`${API_BASE}/attendance/student/${studentId}/records`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    log(`✅ Got ${data.data.length} attendance records`, 'success');
+                    
+                    if (data.data.length > 0) {
+                        const first = data.data[0];
+                        log(`\n📋 First Record:`, 'info');
+                        log(`   AttendanceId: ${first.AttendanceId}`, 'info');
+                        log(`   SessionId: ${first.SessionId}`, 'info');
+                        log(`   Status: ${first.Status}`, 'info');
+                        log(`   CourseId (root): ${first.CourseId}`, first.CourseId ? 'success' : 'error');
+                        log(`   CourseName (root): ${first.CourseName}`, first.CourseName ? 'success' : 'error');
+                        log(`   SessionTitle (root): ${first.SessionTitle}`, 'info');
+                        
+                        if (first.Session) {
+                            log(`\n   📅 Session Object:`, 'info');
+                            log(`      SessionTitle: ${first.Session.SessionTitle}`, 'info');
+                            log(`      CourseId: ${first.Session.CourseId}`, 'info');
+                            
+                            if (first.Session.Course) {
+                                log(`\n      🎓 Session.Course:`, 'success');
+                                log(`         CourseId: ${first.Session.Course.CourseId}`, 'success');
+                                log(`         CourseName: ${first.Session.Course.CourseName}`, 'success');
+                            } else {
+                                log(`      ⚠️ Session.Course is NULL`, 'error');
+                            }
+                        } else {
+                            log(`   ⚠️ Session object is NULL`, 'error');
+                        }
+                        
+                        log(`\n🔍 Full JSON:`, 'info');
+                        log(JSON.stringify(first, null, 2), 'info');
+                    }
+                } else {
+                    log(`❌ Failed: ${data.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+
+        async function testStats() {
+            if (!studentId) {
+                log('⚠️ Please login first!', 'error');
+                return;
+            }
+
+            try {
+                log(`\n📊 Fetching statistics for ${studentId}...`, 'info');
+                
+                const response = await fetch(`${API_BASE}/attendance/student/${studentId}/stats`, {
+                    method: 'GET',
+                    credentials: 'include'
+                });
+
+                const data = await response.json();
+                
+                if (response.ok && data.success) {
+                    log(`✅ Got ${data.data.length} course statistics`, 'success');
+                    data.data.forEach(stat => {
+                        log(`\n   📚 ${stat.CourseName}:`, 'info');
+                        log(`      Total: ${stat.TotalSessions}, Present: ${stat.PresentCount}, Absent: ${stat.AbsentCount}`, 'info');
+                        log(`      Rate: ${stat.AttendanceRate}%`, 'success');
+                    });
+                } else {
+                    log(`❌ Failed: ${data.message || 'Unknown error'}`, 'error');
+                }
+            } catch (error) {
+                log(`❌ Error: ${error.message}`, 'error');
+            }
+        }
+    </script>
+</body>
+</html>

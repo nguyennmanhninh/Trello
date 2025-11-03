@@ -1,0 +1,275 @@
+@{
+    ViewData["Title"] = "Báo Cáo";
+    var userRole = ViewData["UserRole"] as string;
+}
+
+<div class="container-fluid py-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm">
+                <div class="card-header bg-gradient-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="bi bi-file-earmark-bar-graph me-2"></i>
+                        Trung Tâm Báo Cáo
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <p class="lead text-muted">
+                        Xuất báo cáo và thống kê dữ liệu hệ thống với định dạng Excel hoặc PDF
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row g-4">
+        <!-- Students Export -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box bg-primary bg-opacity-10 rounded-3 p-3 me-3">
+                            <i class="bi bi-people-fill text-primary fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0">Danh Sách Sinh Viên</h5>
+                            <small class="text-muted">Xuất thông tin sinh viên</small>
+                        </div>
+                    </div>
+                    <p class="card-text text-muted small">
+                        Xuất danh sách sinh viên với thông tin đầy đủ: họ tên, lớp, khoa, thông tin liên hệ.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="@Url.Action("ExportExcel", "Students")" class="btn btn-success btn-sm">
+                            <i class="bi bi-file-earmark-excel me-1"></i> Xuất Excel
+                        </a>
+                        <a href="@Url.Action("ExportPdf", "Students")" class="btn btn-danger btn-sm">
+                            <i class="bi bi-file-earmark-pdf me-1"></i> Xuất PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Grades Export -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box bg-success bg-opacity-10 rounded-3 p-3 me-3">
+                            <i class="bi bi-clipboard-data-fill text-success fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0">Bảng Điểm</h5>
+                            <small class="text-muted">Xuất điểm sinh viên</small>
+                        </div>
+                    </div>
+                    <p class="card-text text-muted small">
+                        Xuất bảng điểm chi tiết với thông tin môn học, điểm số và xếp loại.
+                    </p>
+                    <div class="d-grid gap-2">
+                        <a href="@Url.Action("ExportExcel", "Grades")" class="btn btn-success btn-sm">
+                            <i class="bi bi-file-earmark-excel me-1"></i> Xuất Excel
+                        </a>
+                        <a href="@Url.Action("ExportPdf", "Grades")" class="btn btn-danger btn-sm">
+                            <i class="bi bi-file-earmark-pdf me-1"></i> Xuất PDF
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Class Report -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box bg-info bg-opacity-10 rounded-3 p-3 me-3">
+                            <i class="bi bi-diagram-3-fill text-info fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0">Báo Cáo Lớp Học</h5>
+                            <small class="text-muted">Tổng hợp theo lớp</small>
+                        </div>
+                    </div>
+                    <p class="card-text text-muted small">
+                        Báo cáo tổng hợp về lớp học: danh sách sinh viên, điểm trung bình, xếp loại.
+                    </p>
+                    <form action="@Url.Action("ExportClassReportExcel", "Reports")" method="get" class="mb-2">
+                        <select name="classId" class="form-select form-select-sm mb-2" required>
+                            <option value="">Chọn lớp...</option>
+                            @foreach (var item in (SelectList)ViewData["Classes"]!)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-success btn-sm">
+                                <i class="bi bi-file-earmark-excel me-1"></i> Xuất Excel
+                            </button>
+                        </div>
+                    </form>
+                    <form action="@Url.Action("ExportClassReportPdf", "Reports")" method="get">
+                        <select name="classId" class="form-select form-select-sm mb-2" required>
+                            <option value="">Chọn lớp...</option>
+                            @foreach (var item in (SelectList)ViewData["Classes"]!)
+                            {
+                                <option value="@item.Value">@item.Text</option>
+                            }
+                        </select>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <i class="bi bi-file-earmark-pdf me-1"></i> Xuất PDF
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+
+        @if (userRole == "Admin")
+        {
+            <!-- Department Report -->
+            <div class="col-md-6 col-lg-4">
+                <div class="card h-100 border-0 shadow-sm hover-lift">
+                    <div class="card-body">
+                        <div class="d-flex align-items-center mb-3">
+                            <div class="icon-box bg-warning bg-opacity-10 rounded-3 p-3 me-3">
+                                <i class="bi bi-building text-warning fs-3"></i>
+                            </div>
+                            <div>
+                                <h5 class="card-title mb-0">Báo Cáo Khoa</h5>
+                                <small class="text-muted">Tổng hợp theo khoa</small>
+                            </div>
+                        </div>
+                        <p class="card-text text-muted small">
+                            Báo cáo tổng hợp về khoa: các lớp, giáo viên chủ nhiệm, số lượng sinh viên.
+                        </p>
+                        <form action="@Url.Action("ExportDepartmentReportExcel", "Reports")" method="get" class="mb-2">
+                            <select name="departmentId" class="form-select form-select-sm mb-2" required>
+                                <option value="">Chọn khoa...</option>
+                                @foreach (var item in (SelectList)ViewData["Departments"]!)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                            <div class="d-grid gap-2">
+                                <button type="submit" class="btn btn-success btn-sm">
+                                    <i class="bi bi-file-earmark-excel me-1"></i> Xuất Excel
+                                </button>
+                            </div>
+                        </form>
+                        <form action="@Url.Action("ExportDepartmentReportPdf", "Reports")" method="get">
+                            <select name="departmentId" class="form-select form-select-sm mb-2" required>
+                                <option value="">Chọn khoa...</option>
+                                @foreach (var item in (SelectList)ViewData["Departments"]!)
+                                {
+                                    <option value="@item.Value">@item.Text</option>
+                                }
+                            </select>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-danger btn-sm">
+                                    <i class="bi bi-file-earmark-pdf me-1"></i> Xuất PDF
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        }
+
+        <!-- Teacher Report -->
+        <div class="col-md-6 col-lg-4">
+            <div class="card h-100 border-0 shadow-sm hover-lift">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-3">
+                        <div class="icon-box bg-danger bg-opacity-10 rounded-3 p-3 me-3">
+                            <i class="bi bi-person-badge-fill text-danger fs-3"></i>
+                        </div>
+                        <div>
+                            <h5 class="card-title mb-0">Báo Cáo Giáo Viên</h5>
+                            <small class="text-muted">Thông tin giảng dạy</small>
+                        </div>
+                    </div>
+                    <p class="card-text text-muted small">
+                        Báo cáo về giáo viên: các lớp chủ nhiệm, môn học giảng dạy.
+                    </p>
+                    @if (userRole == "Teacher")
+                    {
+                        <div class="d-grid gap-2">
+                            <a href="@Url.Action("ExportTeacherReportExcel", "Reports")" class="btn btn-success btn-sm">
+                                <i class="bi bi-file-earmark-excel me-1"></i> Xuất Excel
+                            </a>
+                            <a href="@Url.Action("ExportTeacherReportPdf", "Reports")" class="btn btn-danger btn-sm">
+                                <i class="bi bi-file-earmark-pdf me-1"></i> Xuất PDF
+                            </a>
+                        </div>
+                    }
+                    else
+                    {
+                        <p class="text-info small"><i class="bi bi-info-circle me-1"></i>Admin xem trong danh sách giáo viên</p>
+                    }
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Info Section -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-0 shadow-sm bg-light">
+                <div class="card-body">
+                    <h5 class="card-title">
+                        <i class="bi bi-info-circle text-primary me-2"></i>
+                        Hướng Dẫn Sử Dụng
+                    </h5>
+                    <ul class="mb-0">
+                        <li class="mb-2">
+                            <strong>Excel:</strong> Định dạng bảng tính, dễ chỉnh sửa và phân tích dữ liệu
+                        </li>
+                        <li class="mb-2">
+                            <strong>PDF:</strong> Định dạng cố định, phù hợp để in ấn và lưu trữ
+                        </li>
+                        <li class="mb-2">
+                            <strong>Filters:</strong> Các báo cáo có thể lọc theo lớp, khoa, môn học tại trang danh sách tương ứng
+                        </li>
+                        <li>
+                            <strong>Permissions:</strong> 
+                            @if (userRole == "Admin")
+                            {
+                                <span>Admin có quyền xuất tất cả báo cáo</span>
+                            }
+                            else
+                            {
+                                <span>Giáo viên chỉ xuất báo cáo về lớp/môn học của mình</span>
+                            }
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .hover-lift {
+        transition: transform 0.2s ease-in-out, box-shadow 0.2s ease-in-out;
+    }
+
+    .hover-lift:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 0.5rem 1rem rgba(0, 0, 0, 0.15) !important;
+    }
+
+    .icon-box {
+        width: 60px;
+        height: 60px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .bg-gradient-primary {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    }
+</style>

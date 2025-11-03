@@ -1,0 +1,76 @@
+@model StudentManagementSystem.Models.Course
+
+@{
+    ViewData["Title"] = "Thêm Môn H?c";
+}
+
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+   <h4 class="mb-0"><i class="bi bi-plus-circle"></i> Thêm Môn H?c M?i</h4>
+ </div>
+  <div class="card-body">
+   <form asp-action="Create">
+       <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+
+    <div class="row">
+   <div class="col-md-6">
+       <div class="mb-3">
+     <label asp-for="CourseId" class="form-label"></label>
+    <input asp-for="CourseId" class="form-control" />
+       <span asp-validation-for="CourseId" class="text-danger"></span>
+    </div>
+    </div>
+  <div class="col-md-6">
+       <div class="mb-3">
+  <label asp-for="CourseName" class="form-label"></label>
+      <input asp-for="CourseName" class="form-control" />
+   <span asp-validation-for="CourseName" class="text-danger"></span>
+        </div>
+    </div>
+    </div>
+
+<div class="row">
+   <div class="col-md-4">
+    <div class="mb-3">
+     <label asp-for="Credits" class="form-label"></label>
+        <input asp-for="Credits" class="form-control" type="number" min="1" max="10" />
+      <span asp-validation-for="Credits" class="text-danger"></span>
+    </div>
+      </div>
+   <div class="col-md-4">
+        <div class="mb-3">
+     <label asp-for="DepartmentId" class="form-label"></label>
+    <select asp-for="DepartmentId" class="form-select" asp-items="ViewBag.DepartmentId">
+  <option value="">-- Ch?n khoa --</option>
+         </select>
+        <span asp-validation-for="DepartmentId" class="text-danger"></span>
+       </div>
+     </div>
+        <div class="col-md-4">
+    <div class="mb-3">
+     <label asp-for="TeacherId" class="form-label"></label>
+        <select asp-for="TeacherId" class="form-select" asp-items="ViewBag.TeacherId">
+    <option value="">-- Ch?n gi?ng viên --</option>
+  </select>
+  <span asp-validation-for="TeacherId" class="text-danger"></span>
+   </div>
+         </div>
+</div>
+
+    <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+    <button type="submit" class="btn btn-primary">
+   <i class="bi bi-save"></i> L?u
+</button>
+   <a asp-action="Index" class="btn btn-secondary">
+    <i class="bi bi-arrow-left"></i> Quay l?i
+ </a>
+     </div>
+    </form>
+    </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

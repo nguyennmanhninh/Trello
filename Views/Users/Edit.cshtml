@@ -1,0 +1,98 @@
+@model StudentManagementSystem.Models.User
+
+@{
+    ViewData["Title"] = "Chỉnh sửa Người dùng";
+}
+
+<div class="container-fluid py-4">
+    <div class="row justify-content-center">
+        <div class="col-lg-8 col-md-10">
+            <div class="modern-card">
+                <div class="mb-4">
+                    <h2 class="mb-2">
+                        <i class="fas fa-user-edit text-warning me-2"></i>
+                        Chỉnh sửa Người dùng
+                    </h2>
+                    <p class="text-muted mb-0">Cập nhật thông tin người dùng</p>
+                </div>
+
+                <form asp-action="Edit" method="post">
+                    <div asp-validation-summary="ModelOnly" class="alert alert-danger"></div>
+
+                    <input type="hidden" asp-for="UserId" />
+
+                    <div class="row g-3">
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="UserId" class="form-control" id="userId" placeholder="Mã người dùng" disabled />
+                                <label for="userId">
+                                    <i class="fas fa-id-card me-2"></i>Mã người dùng
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="Username" class="form-control" id="username" placeholder="Tên đăng nhập" />
+                                <label for="username">
+                                    <i class="fas fa-user-circle me-2"></i>Tên đăng nhập
+                                </label>
+                                <span asp-validation-for="Username" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="Password" type="password" class="form-control" id="password" placeholder="Mật khẩu" />
+                                <label for="password">
+                                    <i class="fas fa-lock me-2"></i>Mật khẩu
+                                </label>
+                                <span asp-validation-for="Password" class="text-danger"></span>
+                                <small class="text-muted">Để trống nếu không muốn đổi mật khẩu</small>
+                            </div>
+                        </div>
+
+                        <div class="col-md-6">
+                            <div class="form-floating mb-3">
+                                <input asp-for="EntityId" class="form-control" id="entityId" placeholder="Mã Liên Kết (tuỳ chọn)" />
+                                <label for="entityId">
+                                    <i class="fas fa-link me-2"></i>Mã Liên Kết (tuỳ chọn)
+                                </label>
+                                <span asp-validation-for="EntityId" class="text-danger"></span>
+                                <small class="text-muted">Mã giáo viên hoặc sinh viên</small>
+                            </div>
+                        </div>
+
+                        <div class="col-12">
+                            <div class="form-floating mb-3">
+                                <select asp-for="Role" class="form-select" id="role">
+                                    <option value="">-- Chọn vai trò --</option>
+                                    <option value="Admin">Admin</option>
+                                    <option value="Teacher">Giáo viên</option>
+                                    <option value="Student">Sinh viên</option>
+                                </select>
+                                <label for="role">
+                                    <i class="fas fa-user-tag me-2"></i>Vai trò
+                                </label>
+                                <span asp-validation-for="Role" class="text-danger"></span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2 justify-content-end mt-4">
+                        <a asp-action="Index" class="btn btn-secondary">
+                            <i class="fas fa-times me-2"></i>Hủy
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fas fa-save me-2"></i>Cập nhật
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

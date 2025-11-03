@@ -1,0 +1,353 @@
+<div class="grades-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-title">
+      <span class="icon">📊</span>
+      <span *ngIf="!isStudent()">Quản Lý Điểm</span>
+      <span *ngIf="isStudent()">Bảng Điểm Của Tôi</span>
+    </h1>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <span class="alert-icon">✓</span>
+    <span>{{ successMessage }}</span>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span class="alert-icon">✕</span>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Toolbar (hidden for Student) -->
+  <div class="toolbar" *ngIf="!isStudent()">
+    <div class="filters-row">
+      <!-- Class Filter -->
+      <select class="filter-select" [(ngModel)]="selectedClassId" (change)="onClassFilterChange()">
+        <option value="">Tất cả lớp</option>
+        <option *ngFor="let class of classes" [value]="class.classId">
+          {{ class.classId }} - {{ class.className }}
+        </option>
+      </select>
+
+      <!-- Course Filter -->
+      <select class="filter-select" [(ngModel)]="selectedCourseId" (change)="onCourseFilterChange()">
+        <option value="">Tất cả môn học</option>
+        <option *ngFor="let course of courses" [value]="course.courseId">
+          {{ course.courseId }} - {{ course.courseName }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions-row">
+      <button class="btn btn-primary" (click)="openAddModal()" *ngIf="canEdit()">
+        <span class="icon">➕</span>
+        Thêm Điểm
+      </button>
+      <button class="btn btn-success" (click)="exportToExcel()" *ngIf="canExport()">
+        <span class="icon">📊</span>
+        Xuất Excel
+      </button>
+      <button class="btn btn-warning" (click)="exportToPdf()" *ngIf="canExport()">
+        <span class="icon">📄</span>
+        Xuất PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Data Table -->
+  <div *ngIf="!isLoading" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th *ngIf="!isStudent()">Mã SV</th>
+          <th *ngIf="!isStudent()">Họ Tên</th>
+          <th *ngIf="!isStudent()">Lớp</th>
+          <th>Môn Học</th>
+          <th class="text-center">Điểm</th>
+          <th class="text-center">Xếp Loại</th>
+          <th class="text-center" *ngIf="!isStudent()">Thao Tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="grades.length === 0">
+          <td [attr.colspan]="isStudent() ? '3' : '7'" class="empty-state">
+            <div class="empty-icon">📊</div>
+            <p>Không tìm thấy điểm nào</p>
+          </td>
+        </tr>
+        <tr *ngFor="let grade of grades">
+          <td *ngIf="!isStudent()">{{ grade.studentId }}</td>
+          <td *ngIf="!isStudent()">{{ grade.studentName }}</td>
+          <td *ngIf="!isStudent()">{{ grade.className }}</td>
+          <td>{{ grade.courseName }}</td>
+          <td class="text-center">
+            <span class="score-badge">{{ grade.score.toFixed(2) }}</span>
+          </td>
+          <td class="text-center">
+            <span class="classification-badge" [ngClass]="getClassificationClass(grade.classification)">
+              {{ grade.classification }}
+            </span>
+          </td>
+          <td class="text-center" *ngIf="!isStudent()">
+            <div class="action-buttons">
+              <button 
+                class="btn-action btn-edit" 
+                (click)="openEditModal(grade)"
+                *ngIf="canEdit()"
+                title="Sửa"
+              >
+                <span class="icon">✏️</span>
+              </button>
+              <button 
+                class="btn-action btn-delete" 
+                (click)="openDeleteModal(grade)"
+                *ngIf="canDelete()"
+                title="Xóa"
+              >
+                <span class="icon">🗑️</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="btn-page" (click)="onPageChange(1)" [disabled]="currentPage === 1">
+        ⏮️ Đầu
+      </button>
+      <button class="btn-page" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">
+        ◀️ Trước
+      </button>
+      <span class="page-info">
+        Trang <strong>{{ currentPage }}</strong> / <strong>{{ totalPages }}</strong>
+        (Tổng: <strong>{{ totalCount }}</strong> điểm)
+      </span>
+      <button class="btn-page" (click)="onPageChange(currentPage + 1)" [disabled]="currentPage === totalPages">
+        Sau ▶️
+      </button>
+      <button class="btn-page" (click)="onPageChange(totalPages)" [disabled]="currentPage === totalPages">
+        Cuối ⏭️
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Grade Modal -->
+<div class="modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+  <div class="modal-content modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">➕ Thêm Điểm Mới</h2>
+      <button class="modal-close" (click)="closeAddModal()">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      <form class="form-grid-single">
+        <!-- Student -->
+        <div class="form-group">
+          <label class="form-label">
+            Sinh Viên <span class="required">*</span>
+          </label>
+          <select 
+            class="form-input"
+            [class.error]="validationErrors.studentId"
+            [(ngModel)]="currentGrade.studentId"
+            name="studentId"
+            required
+          >
+            <option value="">-- Chọn sinh viên --</option>
+            <option *ngFor="let student of students" [value]="student.studentId">
+              {{ student.studentId }} - {{ student.fullName }}
+            </option>
+          </select>
+          <small class="error-text" *ngIf="validationErrors.studentId">
+            {{ validationErrors.studentId }}
+          </small>
+        </div>
+
+        <!-- Course -->
+        <div class="form-group">
+          <label class="form-label">
+            Môn Học <span class="required">*</span>
+          </label>
+          <select 
+            class="form-input"
+            [class.error]="validationErrors.courseId"
+            [(ngModel)]="currentGrade.courseId"
+            name="courseId"
+            required
+          >
+            <option value="">-- Chọn môn học --</option>
+            <option *ngFor="let course of courses" [value]="course.courseId">
+              {{ course.courseId }} - {{ course.courseName }}
+            </option>
+          </select>
+          <small class="error-text" *ngIf="validationErrors.courseId">
+            {{ validationErrors.courseId }}
+          </small>
+        </div>
+
+        <!-- Score -->
+        <div class="form-group">
+          <label class="form-label">
+            Điểm <span class="required">*</span>
+          </label>
+          <input 
+            type="number" 
+            class="form-input"
+            [class.error]="validationErrors.score"
+            [(ngModel)]="currentGrade.score"
+            (input)="onScoreChange()"
+            name="score"
+            placeholder="Nhập điểm (0-10)"
+            min="0"
+            max="10"
+            step="0.01"
+            required
+          />
+          <small class="error-text" *ngIf="validationErrors.score">
+            {{ validationErrors.score }}
+          </small>
+        </div>
+
+        <!-- Classification Preview -->
+        <div class="form-group" *ngIf="previewClassification">
+          <label class="form-label">Xếp Loại Dự Kiến</label>
+          <div class="classification-preview">
+            <span class="classification-badge" [ngClass]="getClassificationClass(previewClassification)">
+              {{ previewClassification }}
+            </span>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeAddModal()">
+        Hủy
+      </button>
+      <button class="btn btn-primary" (click)="saveGrade()">
+        <span class="icon">💾</span>
+        Lưu
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Grade Modal -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="modal-content modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">✏️ Sửa Điểm</h2>
+      <button class="modal-close" (click)="closeEditModal()">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      <form class="form-grid-single">
+        <!-- Student (disabled) -->
+        <div class="form-group">
+          <label class="form-label">Sinh Viên</label>
+          <input 
+            type="text" 
+            class="form-input"
+            [value]="currentGrade.studentId + ' - ' + currentGrade.studentName"
+            disabled
+          />
+        </div>
+
+        <!-- Course (disabled) -->
+        <div class="form-group">
+          <label class="form-label">Môn Học</label>
+          <input 
+            type="text" 
+            class="form-input"
+            [value]="currentGrade.courseId + ' - ' + currentGrade.courseName"
+            disabled
+          />
+        </div>
+
+        <!-- Score -->
+        <div class="form-group">
+          <label class="form-label">
+            Điểm <span class="required">*</span>
+          </label>
+          <input 
+            type="number" 
+            class="form-input"
+            [class.error]="validationErrors.score"
+            [(ngModel)]="currentGrade.score"
+            (input)="onScoreChange()"
+            name="score"
+            placeholder="Nhập điểm (0-10)"
+            min="0"
+            max="10"
+            step="0.01"
+            required
+          />
+          <small class="error-text" *ngIf="validationErrors.score">
+            {{ validationErrors.score }}
+          </small>
+        </div>
+
+        <!-- Classification Preview -->
+        <div class="form-group" *ngIf="previewClassification">
+          <label class="form-label">Xếp Loại Dự Kiến</label>
+          <div class="classification-preview">
+            <span class="classification-badge" [ngClass]="getClassificationClass(previewClassification)">
+              {{ previewClassification }}
+            </span>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeEditModal()">
+        Hủy
+      </button>
+      <button class="btn btn-primary" (click)="saveGrade()">
+        <span class="icon">💾</span>
+        Cập Nhật
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="modal-content modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">⚠️ Xác Nhận Xóa</h2>
+      <button class="modal-close" (click)="closeDeleteModal()">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="confirm-message">
+        <div class="confirm-icon">🗑️</div>
+        <p>Bạn có chắc chắn muốn xóa điểm:</p>
+        <p><strong>{{ gradeToDelete?.studentName }} - {{ gradeToDelete?.courseName }}</strong></p>
+        <p>Điểm: <strong>{{ gradeToDelete?.score?.toFixed(2) }}</strong> - Xếp loại: <strong>{{ gradeToDelete?.classification }}</strong></p>
+        <p class="text-warning">⚠️ Hành động này không thể hoàn tác!</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeDeleteModal()">
+        Hủy
+      </button>
+      <button class="btn btn-danger" (click)="deleteGrade()">
+        <span class="icon">🗑️</span>
+        Xóa
+      </button>
+    </div>
+  </div>
+</div>

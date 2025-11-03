@@ -1,0 +1,70 @@
+@model IEnumerable<StudentManagementSystem.Models.Class>
+
+@{
+    ViewData["Title"] = "Quản Lý Lớp Học";
+    var userRole = Context.Session.GetString("UserRole");
+}
+
+<div class="container-fluid mt-4">
+ <div class="d-flex justify-content-between align-items-center mb-4">
+   <h2><i class="bi bi-building"></i> Quản Lý Lớp Học</h2>
+        @if (userRole == "Admin")
+        {
+            <a asp-action="Create" class="btn btn-primary">
+                <i class="bi bi-plus-circle"></i> Thêm Lớp Học
+            </a>
+        }
+    </div>
+
+    <div class="card">
+      <div class="card-body">
+   <div class="table-responsive">
+ <table class="table table-hover table-striped">
+     <thead class="table-dark">
+  <tr>
+   <th>M� L?p</th>
+      <th>T�n L?p</th>
+    <th>Khoa</th>
+    <th>GVCN</th>
+       <th>S? SV</th>
+    <th style="width: 150px;">Thao T�c</th>
+     </tr>
+       </thead>
+  <tbody>
+ @foreach (var item in Model)
+  {
+    <tr>
+     <td><strong>@item.ClassId</strong></td>
+ <td>@item.ClassName</td>
+       <td>@item.Department?.DepartmentName</td>
+  <td>@item.Teacher?.FullName</td>
+     <td class="text-center">
+    <span class="badge bg-info">@item.Students.Count SV</span>
+   </td>
+      <td>
+                        <div class="btn-group" role="group">
+                            <a asp-action="Details" asp-route-id="@item.ClassId" 
+                               class="btn btn-sm btn-info" title="Chi tiết">
+                                <i class="bi bi-eye"></i>
+                            </a>
+                            @if (userRole == "Admin")
+                            {
+                                <a asp-action="Edit" asp-route-id="@item.ClassId" 
+                                   class="btn btn-sm btn-warning" title="Sửa">
+                                    <i class="bi bi-pencil"></i>
+                                </a>
+                                <a asp-action="Delete" asp-route-id="@item.ClassId" 
+                                   class="btn btn-sm btn-danger" title="Xóa">
+                                    <i class="bi bi-trash"></i>
+                                </a>
+                            }
+                        </div>
+      </td>
+  </tr>
+   }
+    </tbody>
+     </table>
+    </div>
+  </div>
+    </div>
+</div>

@@ -1,0 +1,228 @@
+<div class="take-attendance-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span class="alert-icon">⚠️</span>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Success Message -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <span class="alert-icon">✓</span>
+    <span>{{ successMessage }}</span>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading && session" class="content">
+    <!-- Page Header -->
+    <div class="page-header">
+      <div class="header-left">
+        <button class="btn-back" (click)="cancel()">
+          <span>←</span> Quay lại
+        </button>
+        <div class="header-info">
+          <h1>Điểm Danh: {{ session.sessionTitle }}</h1>
+          <p class="session-meta">
+            <span class="badge" [class]="getStatusClass(session.status || '')">
+              {{ session.status }}
+            </span>
+            <span>{{ session.courseName }}</span>
+            <span>{{ attendanceService.formatDate(session.sessionDate) }}</span>
+            <span>{{ attendanceService.formatTime(session.sessionTime) }}</span>
+            <span *ngIf="session.location">📍 {{ session.location }}</span>
+          </p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <button class="btn btn-secondary" (click)="saveAttendance()" [disabled]="saving">
+          <span *ngIf="!saving">💾 Lưu</span>
+          <span *ngIf="saving">Đang lưu...</span>
+        </button>
+        <button class="btn btn-primary" (click)="completeSession()" [disabled]="saving">
+          <span *ngIf="!saving">✓ Hoàn thành</span>
+          <span *ngIf="saving">Đang xử lý...</span>
+        </button>
+      </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon">👥</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ stats.total }}</div>
+          <div class="stat-label">Tổng sinh viên</div>
+        </div>
+      </div>
+      <div class="stat-card present">
+        <div class="stat-icon">✓</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ stats.present }}</div>
+          <div class="stat-label">Có mặt</div>
+        </div>
+      </div>
+      <div class="stat-card absent">
+        <div class="stat-icon">✗</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ stats.absent }}</div>
+          <div class="stat-label">Vắng</div>
+        </div>
+      </div>
+      <div class="stat-card late">
+        <div class="stat-icon">⏰</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ stats.late }}</div>
+          <div class="stat-label">Muộn</div>
+        </div>
+      </div>
+      <div class="stat-card excused">
+        <div class="stat-icon">📝</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ stats.excused }}</div>
+          <div class="stat-label">Có phép</div>
+        </div>
+      </div>
+      <div class="stat-card attendance-rate" [style.borderColor]="getAttendanceRateColor()">
+        <div class="stat-icon">📊</div>
+        <div class="stat-info">
+          <div class="stat-value" [style.color]="getAttendanceRateColor()">{{ getAttendanceRate() }}%</div>
+          <div class="stat-label">Tỷ lệ đi học</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Quick Actions & Filters -->
+    <div class="toolbar">
+      <div class="quick-actions">
+        <button class="btn btn-quick" (click)="markAllPresent()">
+          ✓ Tất cả có mặt
+        </button>
+        <button class="btn btn-quick" (click)="markAllAbsent()">
+          ✗ Tất cả vắng
+        </button>
+      </div>
+      <div class="filters">
+        <select [(ngModel)]="statusFilter" class="filter-select">
+          <option value="All">Tất cả trạng thái</option>
+          <option value="Present">Có mặt</option>
+          <option value="Absent">Vắng</option>
+          <option value="Late">Muộn</option>
+          <option value="Excused">Có phép</option>
+        </select>
+        <input 
+          type="text" 
+          [(ngModel)]="searchTerm" 
+          placeholder="🔍 Tìm MSSV hoặc tên..." 
+          class="filter-search"
+        />
+      </div>
+    </div>
+
+    <!-- Attendance Table -->
+    <div class="attendance-table-container">
+      <table class="attendance-table">
+        <thead>
+          <tr>
+            <th class="col-stt">STT</th>
+            <th class="col-id">MSSV</th>
+            <th class="col-name">Họ và tên</th>
+            <th class="col-status">Trạng thái</th>
+            <th class="col-time">Giờ check-in</th>
+            <th class="col-notes">Ghi chú</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let record of filteredRecords; let i = index" 
+              [class.row-present]="record.status === 'Present'"
+              [class.row-absent]="record.status === 'Absent'"
+              [class.row-late]="record.status === 'Late'"
+              [class.row-excused]="record.status === 'Excused'">
+            <td class="col-stt">{{ i + 1 }}</td>
+            <td class="col-id">{{ record.studentId }}</td>
+            <td class="col-name">
+              <div class="student-name">{{ record.studentName }}</div>
+            </td>
+            <td class="col-status">
+              <div class="status-buttons">
+                <button 
+                  class="status-btn present" 
+                  [class.active]="record.status === 'Present'"
+                  (click)="toggleStatus(record, 'Present')"
+                  title="Có mặt">
+                  ✓
+                </button>
+                <button 
+                  class="status-btn absent" 
+                  [class.active]="record.status === 'Absent'"
+                  (click)="toggleStatus(record, 'Absent')"
+                  title="Vắng">
+                  ✗
+                </button>
+                <button 
+                  class="status-btn late" 
+                  [class.active]="record.status === 'Late'"
+                  (click)="toggleStatus(record, 'Late')"
+                  title="Muộn">
+                  ⏰
+                </button>
+                <button 
+                  class="status-btn excused" 
+                  [class.active]="record.status === 'Excused'"
+                  (click)="toggleStatus(record, 'Excused')"
+                  title="Có phép">
+                  📝
+                </button>
+              </div>
+            </td>
+            <td class="col-time">
+              <input 
+                type="time" 
+                [(ngModel)]="record.checkInTime" 
+                class="time-input"
+                [disabled]="record.status === 'Absent'"
+                *ngIf="record.status === 'Present' || record.status === 'Late'"
+              />
+              <span *ngIf="record.status === 'Absent' || record.status === 'Excused'">-</span>
+            </td>
+            <td class="col-notes">
+              <input 
+                type="text" 
+                [(ngModel)]="record.notes" 
+                placeholder="Ghi chú..."
+                class="notes-input"
+                maxlength="200"
+              />
+            </td>
+          </tr>
+        </tbody>
+      </table>
+
+      <!-- Empty State -->
+      <div *ngIf="filteredRecords.length === 0" class="empty-state">
+        <p>Không tìm thấy sinh viên nào</p>
+      </div>
+    </div>
+
+    <!-- Bottom Actions -->
+    <div class="bottom-actions">
+      <button class="btn btn-cancel" (click)="cancel()">
+        Hủy
+      </button>
+      <div class="action-group">
+        <button class="btn btn-secondary" (click)="saveAttendance()" [disabled]="saving">
+          <span *ngIf="!saving">💾 Lưu điểm danh</span>
+          <span *ngIf="saving">Đang lưu...</span>
+        </button>
+        <button class="btn btn-primary" (click)="completeSession()" [disabled]="saving">
+          <span *ngIf="!saving">✓ Hoàn thành & Quay lại</span>
+          <span *ngIf="saving">Đang xử lý...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

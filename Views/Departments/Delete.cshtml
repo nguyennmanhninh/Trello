@@ -1,0 +1,42 @@
+@model StudentManagementSystem.Models.Department
+
+@{
+    ViewData["Title"] = "Xóa Khoa";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+  <div class="col-md-6">
+<div class="card border-danger">
+ <div class="card-header bg-danger text-white">
+       <h4 class="mb-0"><i class="bi bi-trash"></i> Xác Nh?n Xóa Khoa</h4>
+       </div>
+        <div class="card-body">
+    <div class="alert alert-warning">
+         <i class="bi bi-exclamation-triangle"></i> B?n có ch?c ch?n mu?n xóa khoa này không?
+   </div>
+
+       <dl class="row">
+    <dt class="col-sm-4">Mã Khoa:</dt>
+    <dd class="col-sm-8"><strong>@Model.DepartmentId</strong></dd>
+
+ <dt class="col-sm-4">Tên Khoa:</dt>
+     <dd class="col-sm-8">@Model.DepartmentName</dd>
+    </dl>
+
+  <form asp-action="Delete" method="post">
+    <input type="hidden" asp-for="DepartmentId" />
+         <div class="d-grid gap-2">
+      <button type="submit" class="btn btn-danger">
+  <i class="bi bi-trash"></i> Xác Nh?n Xóa
+    </button>
+    <a asp-action="Index" class="btn btn-secondary">
+   <i class="bi bi-arrow-left"></i> H?y
+         </a>
+        </div>
+     </form>
+        </div>
+   </div>
+       </div>
+    </div>
+</div>

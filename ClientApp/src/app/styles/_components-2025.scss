@@ -1,0 +1,526 @@
+/* ============================================
+   MODERN COMPONENT LIBRARY 2025
+   Ready-to-use UI components
+   ============================================ */
+
+@import './design-tokens-2025';
+
+/* ============================================
+   📦 CARDS - Modern styles
+   ============================================ */
+
+.card-modern {
+  @include card-modern;
+  padding: spacing(6);
+  
+  &.card-hover-lift {
+    &:hover {
+      transform: translateY(-8px) scale(1.02);
+      box-shadow: shadow(xl);
+    }
+  }
+  
+  &.card-gradient-border {
+    position: relative;
+    background: white;
+    
+    &::before {
+      content: '';
+      position: absolute;
+      inset: -2px;
+      background: map-get($gradients, primary);
+      border-radius: radius(xl);
+      z-index: -1;
+      opacity: 0;
+      transition: opacity transition(base);
+    }
+    
+    &:hover::before {
+      opacity: 1;
+    }
+  }
+}
+
+.card-glass {
+  @include glass-card;
+  padding: spacing(6);
+}
+
+.card-stat {
+  @include card-modern;
+  padding: spacing(6);
+  display: flex;
+  align-items: center;
+  gap: spacing(4);
+  position: relative;
+  overflow: hidden;
+  
+  &::after {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(99, 102, 241, 0.1) 0%, transparent 70%);
+    animation: float 8s ease-in-out infinite;
+  }
+  
+  .stat-icon {
+    font-size: 3rem;
+    width: 80px;
+    height: 80px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: radius(xl);
+    position: relative;
+    z-index: 1;
+  }
+  
+  .stat-content {
+    flex: 1;
+    position: relative;
+    z-index: 1;
+    
+    .stat-label {
+      font-size: map-get($font-size, sm);
+      color: color(gray-600);
+      font-weight: map-get($font-weight, medium);
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      margin-bottom: spacing(2);
+    }
+    
+    .stat-value {
+      font-size: map-get($font-size, 3xl);
+      font-weight: map-get($font-weight, bold);
+      color: color(gray-900);
+      line-height: 1;
+    }
+    
+    .stat-trend {
+      font-size: map-get($font-size, sm);
+      margin-top: spacing(2);
+      display: inline-flex;
+      align-items: center;
+      gap: spacing(1);
+      padding: spacing(1) spacing(2);
+      border-radius: radius(full);
+      font-weight: map-get($font-weight, medium);
+      
+      &.trend-up {
+        background: color(success-light);
+        color: color(success);
+      }
+      
+      &.trend-down {
+        background: color(danger-light);
+        color: color(danger);
+      }
+    }
+  }
+}
+
+/* ============================================
+   🔘 BUTTONS - Modern variants
+   ============================================ */
+
+.btn-modern {
+  @include button-modern;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: spacing(2);
+  font-size: map-get($font-size, base);
+  
+  &.btn-primary {
+    background: map-get($gradients, primary);
+    color: white;
+    
+    &:hover {
+      box-shadow: shadow(glow-md);
+    }
+  }
+  
+  &.btn-secondary {
+    background: color(gray-100);
+    color: color(gray-900);
+    
+    &:hover {
+      background: color(gray-200);
+    }
+  }
+  
+  &.btn-success {
+    background: color(success);
+    color: white;
+    
+    &:hover {
+      background: darken(color(success), 10%);
+    }
+  }
+  
+  &.btn-danger {
+    background: color(danger);
+    color: white;
+    
+    &:hover {
+      background: darken(color(danger), 10%);
+    }
+  }
+  
+  &.btn-ghost {
+    background: transparent;
+    color: color(primary-600);
+    border: 1px solid color(primary-200);
+    
+    &:hover {
+      background: color(primary-50);
+      border-color: color(primary-300);
+    }
+  }
+  
+  &.btn-sm {
+    padding: spacing(2) spacing(4);
+    font-size: map-get($font-size, sm);
+  }
+  
+  &.btn-lg {
+    padding: spacing(4) spacing(8);
+    font-size: map-get($font-size, lg);
+  }
+  
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    pointer-events: none;
+  }
+}
+
+/* ============================================
+   📝 FORMS - Modern inputs
+   ============================================ */
+
+.form-group-modern {
+  margin-bottom: spacing(6);
+  
+  .form-label {
+    display: block;
+    margin-bottom: spacing(2);
+    font-size: map-get($font-size, sm);
+    font-weight: map-get($font-weight, medium);
+    color: color(gray-700);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+  
+  .form-control-modern {
+    width: 100%;
+    padding: spacing(3) spacing(4);
+    border: 2px solid color(gray-200);
+    border-radius: radius(lg);
+    font-size: map-get($font-size, base);
+    transition: all transition(base);
+    background: white;
+    
+    &:focus {
+      outline: none;
+      border-color: color(primary-500);
+      box-shadow: 0 0 0 4px rgba(99, 102, 241, 0.1);
+    }
+    
+    &::placeholder {
+      color: color(gray-400);
+    }
+    
+    &.error {
+      border-color: color(danger);
+      
+      &:focus {
+        box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.1);
+      }
+    }
+  }
+  
+  .form-help {
+    margin-top: spacing(2);
+    font-size: map-get($font-size, sm);
+    color: color(gray-500);
+  }
+  
+  .form-error {
+    margin-top: spacing(2);
+    font-size: map-get($font-size, sm);
+    color: color(danger);
+    display: flex;
+    align-items: center;
+    gap: spacing(1);
+  }
+}
+
+/* ============================================
+   🏷️ BADGES - Status indicators
+   ============================================ */
+
+.badge-modern {
+  display: inline-flex;
+  align-items: center;
+  gap: spacing(1);
+  padding: spacing(1) spacing(3);
+  border-radius: radius(full);
+  font-size: map-get($font-size, xs);
+  font-weight: map-get($font-weight, medium);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  
+  &.badge-primary {
+    background: color(primary-100);
+    color: color(primary-700);
+  }
+  
+  &.badge-success {
+    background: color(success-light);
+    color: color(success);
+  }
+  
+  &.badge-warning {
+    background: color(warning-light);
+    color: color(warning);
+  }
+  
+  &.badge-danger {
+    background: color(danger-light);
+    color: color(danger);
+  }
+  
+  &.badge-info {
+    background: color(info-light);
+    color: color(info);
+  }
+  
+  &.badge-gradient {
+    background: map-get($gradients, primary);
+    color: white;
+    box-shadow: shadow(glow-sm);
+  }
+}
+
+/* ============================================
+   📊 TABLE - Modern data tables
+   ============================================ */
+
+.table-modern {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  
+  thead {
+    tr {
+      background: linear-gradient(135deg, color(gray-50) 0%, color(gray-100) 100%);
+      
+      th {
+        padding: spacing(4) spacing(4);
+        text-align: left;
+        font-size: map-get($font-size, xs);
+        font-weight: map-get($font-weight, semibold);
+        color: color(gray-700);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        border-bottom: 2px solid color(gray-200);
+        white-space: nowrap;
+        
+        &:first-child {
+          border-top-left-radius: radius(lg);
+        }
+        
+        &:last-child {
+          border-top-right-radius: radius(lg);
+        }
+      }
+    }
+  }
+  
+  tbody {
+    tr {
+      transition: all transition(fast);
+      
+      &:hover {
+        background: color(primary-50);
+        transform: scale(1.01);
+        box-shadow: shadow(sm);
+      }
+      
+      td {
+        padding: spacing(4) spacing(4);
+        border-bottom: 1px solid color(gray-100);
+        font-size: map-get($font-size, sm);
+        color: color(gray-900);
+      }
+    }
+  }
+}
+
+/* ============================================
+   🎨 ALERTS - Notifications
+   ============================================ */
+
+.alert-modern {
+  padding: spacing(4) spacing(6);
+  border-radius: radius(lg);
+  display: flex;
+  align-items: flex-start;
+  gap: spacing(3);
+  animation: fadeInDown 0.4s ease-out;
+  border-left: 4px solid;
+  
+  .alert-icon {
+    font-size: map-get($font-size, xl);
+    flex-shrink: 0;
+  }
+  
+  .alert-content {
+    flex: 1;
+    
+    .alert-title {
+      font-weight: map-get($font-weight, semibold);
+      margin-bottom: spacing(1);
+    }
+    
+    .alert-message {
+      font-size: map-get($font-size, sm);
+      opacity: 0.9;
+    }
+  }
+  
+  &.alert-success {
+    background: color(success-light);
+    color: color(success);
+    border-color: color(success);
+  }
+  
+  &.alert-warning {
+    background: color(warning-light);
+    color: color(warning);
+    border-color: color(warning);
+  }
+  
+  &.alert-danger {
+    background: color(danger-light);
+    color: color(danger);
+    border-color: color(danger);
+  }
+  
+  &.alert-info {
+    background: color(info-light);
+    color: color(info);
+    border-color: color(info);
+  }
+}
+
+/* ============================================
+   🔄 LOADING - Spinners
+   ============================================ */
+
+.loader-modern {
+  display: inline-block;
+  width: 48px;
+  height: 48px;
+  border: 4px solid color(gray-200);
+  border-top-color: color(primary-600);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.loader-dots {
+  display: inline-flex;
+  gap: spacing(2);
+  
+  .dot {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    background: color(primary-600);
+    animation: pulse 1.4s ease-in-out infinite;
+    
+    &:nth-child(2) { animation-delay: 0.2s; }
+    &:nth-child(3) { animation-delay: 0.4s; }
+  }
+}
+
+/* ============================================
+   💬 TOOLTIPS - Hover info
+   ============================================ */
+
+.tooltip-modern {
+  position: relative;
+  display: inline-block;
+  
+  .tooltip-text {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%) translateY(8px);
+    padding: spacing(2) spacing(3);
+    background: color(gray-900);
+    color: white;
+    font-size: map-get($font-size, xs);
+    border-radius: radius(md);
+    white-space: nowrap;
+    z-index: map-get($z-index, tooltip);
+    transition: all transition(base);
+    
+    &::after {
+      content: '';
+      position: absolute;
+      top: 100%;
+      left: 50%;
+      transform: translateX(-50%);
+      border: 5px solid transparent;
+      border-top-color: color(gray-900);
+    }
+  }
+  
+  &:hover .tooltip-text {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* ============================================
+   📱 RESPONSIVE UTILITIES
+   ============================================ */
+
+.container-modern {
+  max-width: 1400px;
+  margin: 0 auto;
+  padding: 0 spacing(6);
+  
+  @include responsive(xl) {
+    max-width: 1600px;
+  }
+}
+
+.grid-modern {
+  display: grid;
+  gap: spacing(6);
+  
+  &.cols-2 {
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  }
+  
+  &.cols-3 {
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  }
+  
+  &.cols-4 {
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  }
+}

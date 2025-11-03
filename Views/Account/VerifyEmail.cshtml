@@ -1,0 +1,410 @@
+@model StudentManagementSystem.Models.ViewModels.VerifyEmailViewModel
+@{
+    ViewData["Title"] = "Xác thực Email";
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Student Management System</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .verify-container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+            max-width: 450px;
+            width: 100%;
+            animation: slideIn 0.5s ease-out;
+        }
+
+        @@keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(-30px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .verify-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .verify-header .icon {
+            font-size: 60px;
+            margin-bottom: 15px;
+        }
+
+        .verify-header h1 {
+            font-size: 28px;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .verify-header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+
+        .verify-body {
+            padding: 40px 30px;
+        }
+
+        .alert {
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 25px;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .alert-success {
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .alert-danger {
+            background-color: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .alert-info {
+            background-color: #d1ecf1;
+            border: 1px solid #bee5eb;
+            color: #0c5460;
+        }
+
+        .instructions {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-bottom: 25px;
+        }
+
+        .instructions h3 {
+            font-size: 16px;
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .instructions ol {
+            margin-left: 20px;
+            color: #666;
+            font-size: 14px;
+            line-height: 2;
+        }
+
+        .form-group {
+            margin-bottom: 25px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: #333;
+            font-weight: 500;
+            font-size: 14px;
+        }
+
+        .form-group label .required {
+            color: #e74c3c;
+            margin-left: 3px;
+        }
+
+        .form-control {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            font-family: inherit;
+        }
+
+        .form-control:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        }
+
+        .form-control.input-error {
+            border-color: #e74c3c;
+        }
+
+        .verification-input {
+            text-align: center;
+            font-size: 24px;
+            letter-spacing: 10px;
+            font-weight: bold;
+            font-family: 'Courier New', monospace;
+        }
+
+        .text-danger {
+            color: #e74c3c;
+            font-size: 12px;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            margin-bottom: 10px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .btn:active {
+            transform: translateY(0);
+        }
+
+        .form-footer {
+            text-align: center;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .form-footer a {
+            color: #667eea;
+            text-decoration: none;
+            font-weight: 500;
+            transition: color 0.3s ease;
+        }
+
+        .form-footer a:hover {
+            color: #764ba2;
+            text-decoration: underline;
+        }
+
+        .timer {
+            text-align: center;
+            margin: 20px 0;
+            padding: 15px;
+            background: #fff3cd;
+            border-radius: 8px;
+            color: #856404;
+            font-weight: 500;
+        }
+
+        @@media (max-width: 576px) {
+            .verify-container {
+                border-radius: 10px;
+            }
+
+            .verify-header {
+                padding: 30px 20px;
+            }
+
+            .verify-body {
+                padding: 30px 20px;
+            }
+
+            .verification-input {
+                font-size: 20px;
+                letter-spacing: 5px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="verify-container">
+        <div class="verify-header">
+            <div class="icon">📧</div>
+            <h1>Xác Thực Email</h1>
+            <p>Nhập mã xác thực để hoàn tất đăng ký</p>
+        </div>
+
+        <div class="verify-body">
+            @if (TempData["SuccessMessage"] != null)
+            {
+                <div class="alert alert-success">
+                    @Html.Raw(TempData["SuccessMessage"])
+                </div>
+            }
+
+            @if (TempData["VerificationCode"] != null)
+            {
+                <div class="alert alert-info" style="text-align: center; padding: 30px;">
+                    <h3 style="margin-bottom: 15px;">🔑 Mã Xác Thực Của Bạn:</h3>
+                    <div style="font-size: 48px; font-weight: bold; color: #667eea; letter-spacing: 10px; font-family: 'Courier New', monospace; background: #f8f9fa; padding: 20px; border-radius: 10px; border: 2px dashed #667eea;">
+                        @TempData["VerificationCode"]
+                    </div>
+                    <p style="margin-top: 15px; color: #666;">Sao chép mã này và dán vào ô bên dưới</p>
+                </div>
+            }
+
+            @if (TempData["ErrorMessage"] != null)
+            {
+                <div class="alert alert-danger">
+                    ❌ @TempData["ErrorMessage"]
+                </div>
+            }
+
+            @if (TempData["InfoMessage"] != null)
+            {
+                <div class="alert alert-info">
+                    ℹ️ @TempData["InfoMessage"]
+                </div>
+            }
+
+            @if (ViewData.ModelState.ErrorCount > 0 && !ViewData.ModelState.IsValid)
+            {
+                <div class="alert alert-danger">
+                    <strong>❌ Lỗi:</strong> Vui lòng kiểm tra lại thông tin bên dưới.
+                </div>
+            }
+
+            <div class="instructions">
+                <h3>📋 Hướng dẫn:</h3>
+                <ol>
+                    <li>Sao chép mã xác thực <strong style="color: #667eea;">6 chữ số</strong> ở trên</li>
+                    <li>Dán vào ô "Mã xác thực" bên dưới</li>
+                    <li>Nhấn nút <strong>"Xác Thực"</strong></li>
+                    <li>Hoàn tất đăng ký!</li>
+                </ol>
+            </div>
+
+            <div class="timer">
+                ⏰ Mã xác thực có hiệu lực trong <strong>15 phút</strong>
+            </div>
+
+            <form asp-action="VerifyEmail" method="post">
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label asp-for="Email">
+                        Email <span class="required">*</span>
+                    </label>
+                    <input asp-for="Email" class="form-control" type="email" 
+                           placeholder="example@gmail.com" 
+                           value="@ViewBag.Email" 
+                           readonly="@(ViewBag.Email != null)" />
+                    <span asp-validation-for="Email" class="text-danger"></span>
+                </div>
+
+                <div class="form-group">
+                    <label asp-for="VerificationCode">
+                        Mã xác thực <span class="required">*</span>
+                    </label>
+                    <input asp-for="VerificationCode" 
+                           class="form-control verification-input" 
+                           type="text" 
+                           placeholder="000000" 
+                           maxlength="6"
+                           autocomplete="off" />
+                    <span asp-validation-for="VerificationCode" class="text-danger"></span>
+                    <small style="display: block; text-align: center; margin-top: 8px; color: #666;">
+                        Nhập 6 chữ số nhận được qua email
+                    </small>
+                </div>
+
+                <button type="submit" class="btn btn-primary">
+                    ✅ Xác Thực Ngay
+                </button>
+
+                @if (ViewBag.ShowResendButton == true || ViewBag.Email != null)
+                {
+                    <button type="button" class="btn btn-secondary" onclick="resendCode()">
+                        🔄 Gửi lại mã xác thực
+                    </button>
+                }
+
+                <div class="form-footer">
+                    <a asp-action="Login">⬅️ Quay lại đăng nhập</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/jquery-validation/dist/jquery.validate.min.js"></script>
+    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+    <script>
+        // Auto-format verification code (numbers only)
+        document.querySelector('.verification-input').addEventListener('input', function(e) {
+            this.value = this.value.replace(/[^0-9]/g, '');
+        });
+
+        // Resend verification code
+        function resendCode() {
+            const email = document.querySelector('input[name="Email"]').value;
+            if (!email) {
+                alert('Vui lòng nhập email');
+                return;
+            }
+
+            if (confirm('Gửi lại mã xác thực đến email ' + email + '?')) {
+                const form = document.createElement('form');
+                form.method = 'POST';
+                form.action = '@Url.Action("ResendVerificationCode", "Account")';
+
+                const emailInput = document.createElement('input');
+                emailInput.type = 'hidden';
+                emailInput.name = 'email';
+                emailInput.value = email;
+
+                const tokenInput = document.createElement('input');
+                tokenInput.type = 'hidden';
+                tokenInput.name = '__RequestVerificationToken';
+                tokenInput.value = document.querySelector('input[name="__RequestVerificationToken"]').value;
+
+                form.appendChild(emailInput);
+                form.appendChild(tokenInput);
+                document.body.appendChild(form);
+                form.submit();
+            }
+        }
+    </script>
+</body>
+</html>

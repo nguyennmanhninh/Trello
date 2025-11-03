@@ -1,0 +1,253 @@
+<div class="profile-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-title">
+      <span class="icon">👤</span>
+      Thông Tin Cá Nhân
+      <span class="role-badge">{{ userRole }}</span>
+    </h1>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <span class="alert-icon">✓</span>
+    <span>{{ successMessage }}</span>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span class="alert-icon">✕</span>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading && !profileData" class="loading-container">
+    <div class="spinner"></div>
+    <p>Đang tải thông tin...</p>
+  </div>
+
+  <!-- Profile Content -->
+  <div *ngIf="!loading && profileData" class="profile-content">
+    
+    <!-- STUDENT PROFILE -->
+    <div *ngIf="isStudent()" class="profile-card">
+      <h2>Thông tin Sinh viên</h2>
+      <div class="profile-info">
+        <div class="info-row">
+          <label>Mã sinh viên:</label>
+          <span class="value">{{ getStudentData()?.studentId }}</span>
+        </div>
+        <div class="info-row">
+          <label>Họ và tên:</label>
+          <span class="value">{{ getStudentData()?.fullName }}</span>
+        </div>
+        <div class="info-row">
+          <label>Email:</label>
+          <span class="value">{{ getStudentData()?.email || 'Chưa cập nhật' }}</span>
+        </div>
+        <div class="info-row">
+          <label>Số điện thoại:</label>
+          <span class="value">{{ getStudentData()?.phone || 'Chưa cập nhật' }}</span>
+        </div>
+        <div class="info-row">
+          <label>Địa chỉ:</label>
+          <span class="value">{{ getStudentData()?.address || 'Chưa cập nhật' }}</span>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button class="btn btn-primary" (click)="enableEditMode()">
+          Chỉnh sửa
+        </button>
+        <button class="btn btn-secondary" (click)="openChangePassword()">
+          Đổi mật khẩu
+        </button>
+      </div>
+    </div>
+
+    <!-- TEACHER PROFILE -->
+    <div *ngIf="isTeacher()" class="profile-card">
+      <h2>Thông tin Giảng viên</h2>
+      <div class="profile-info">
+        <div class="info-row">
+          <label>Mã giảng viên:</label>
+          <span class="value">{{ getTeacherData()?.teacherId }}</span>
+        </div>
+        <div class="info-row">
+          <label>Họ và tên:</label>
+          <span class="value">{{ getTeacherData()?.fullName }}</span>
+        </div>
+        <div class="info-row">
+          <label>Số điện thoại:</label>
+          <span class="value">{{ getTeacherData()?.phone || 'Chưa cập nhật' }}</span>
+        </div>
+        <div class="info-row">
+          <label>Địa chỉ:</label>
+          <span class="value">{{ getTeacherData()?.address || 'Chưa cập nhật' }}</span>
+        </div>
+        <div class="info-row">
+          <label>Khoa:</label>
+          <span class="value">{{ getTeacherData()?.departmentName || 'Chưa có' }}</span>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button class="btn btn-primary" (click)="enableEditMode()">
+          Chỉnh sửa
+        </button>
+        <button class="btn btn-secondary" (click)="openChangePassword()">
+          Đổi mật khẩu
+        </button>
+      </div>
+    </div>
+
+    <!-- ADMIN PROFILE -->
+    <div *ngIf="isAdmin()" class="profile-card">
+      <h2>Thông tin Quản trị viên</h2>
+      <div class="profile-info">
+        <div class="info-row">
+          <label>Tên đăng nhập:</label>
+          <span class="value">{{ getAdminData()?.username }}</span>
+        </div>
+        <div class="info-row">
+          <label>Vai trò:</label>
+          <span class="value">{{ getAdminData()?.role }}</span>
+        </div>
+      </div>
+      <div class="profile-actions">
+        <button class="btn btn-primary" (click)="enableEditMode()">
+          Chỉnh sửa
+        </button>
+        <button class="btn btn-secondary" (click)="openChangePassword()">
+          Đổi mật khẩu
+        </button>
+      </div>
+    </div>
+
+    <!-- EDIT PROFILE MODAL (Student) -->
+    <div class="modal-overlay" *ngIf="isEditMode && isStudent() && editedStudent" (click)="cancelEdit()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Chỉnh Sửa Thông Tin</h2>
+          <button class="modal-close" (click)="cancelEdit()">×</button>
+        </div>
+        <div class="modal-body">
+          <form class="profile-form">
+            <div class="form-group">
+              <label>Email</label>
+              <input type="email" class="form-input" [(ngModel)]="editedStudent.email" name="email"
+                     [class.error]="validationErrors.email" />
+              <small class="error-text" *ngIf="validationErrors.email">{{ validationErrors.email }}</small>
+            </div>
+            <div class="form-group">
+              <label>Số điện thoại</label>
+              <input type="tel" class="form-input" [(ngModel)]="editedStudent.phone" name="phone"
+                     [class.error]="validationErrors.phone" />
+              <small class="error-text" *ngIf="validationErrors.phone">{{ validationErrors.phone }}</small>
+            </div>
+            <div class="form-group">
+              <label>Địa chỉ</label>
+              <textarea class="form-input" [(ngModel)]="editedStudent.address" name="address" rows="3"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="cancelEdit()">Hủy</button>
+          <button class="btn btn-primary" (click)="saveProfile()">Lưu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIT PROFILE MODAL (Teacher) -->
+    <div class="modal-overlay" *ngIf="isEditMode && isTeacher() && editedTeacher" (click)="cancelEdit()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Chỉnh Sửa Thông Tin</h2>
+          <button class="modal-close" (click)="cancelEdit()">×</button>
+        </div>
+        <div class="modal-body">
+          <form class="profile-form">
+            <div class="form-group">
+              <label>Họ và tên</label>
+              <input type="text" class="form-input" [(ngModel)]="editedTeacher.fullName" name="fullName" 
+                     [class.error]="validationErrors.fullName" />
+              <small class="error-text" *ngIf="validationErrors.fullName">{{ validationErrors.fullName }}</small>
+            </div>
+            <div class="form-group">
+              <label>Số điện thoại</label>
+              <input type="tel" class="form-input" [(ngModel)]="editedTeacher.phone" name="phone"
+                     [class.error]="validationErrors.phone" />
+              <small class="error-text" *ngIf="validationErrors.phone">{{ validationErrors.phone }}</small>
+            </div>
+            <div class="form-group">
+              <label>Địa chỉ</label>
+              <textarea class="form-input" [(ngModel)]="editedTeacher.address" name="address" rows="3"></textarea>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="cancelEdit()">Hủy</button>
+          <button class="btn btn-primary" (click)="saveProfile()">Lưu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- EDIT PROFILE MODAL (Admin) -->
+    <div class="modal-overlay" *ngIf="isEditMode && isAdmin() && editedAdmin" (click)="cancelEdit()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Chỉnh Sửa Thông Tin</h2>
+          <button class="modal-close" (click)="cancelEdit()">×</button>
+        </div>
+        <div class="modal-body">
+          <form class="profile-form">
+            <div class="form-group">
+              <label>Tên đăng nhập</label>
+              <input type="text" class="form-input" [(ngModel)]="editedAdmin.username" name="username" 
+                     [class.error]="validationErrors.username" />
+              <small class="error-text" *ngIf="validationErrors.username">{{ validationErrors.username }}</small>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="cancelEdit()">Hủy</button>
+          <button class="btn btn-primary" (click)="saveProfile()">Lưu</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- CHANGE PASSWORD MODAL -->
+    <div class="modal-overlay" *ngIf="isChangePasswordMode" (click)="cancelChangePassword()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2>Đổi Mật Khẩu</h2>
+          <button class="modal-close" (click)="cancelChangePassword()">×</button>
+        </div>
+        <div class="modal-body">
+          <form class="password-form">
+            <div class="form-group">
+              <label>Mật khẩu cũ <span class="required">*</span></label>
+              <input type="password" class="form-input" [(ngModel)]="passwordData.oldPassword" name="oldPassword"
+                     [class.error]="validationErrors.oldPassword" />
+              <small class="error-text" *ngIf="validationErrors.oldPassword">{{ validationErrors.oldPassword }}</small>
+            </div>
+            <div class="form-group">
+              <label>Mật khẩu mới <span class="required">*</span></label>
+              <input type="password" class="form-input" [(ngModel)]="passwordData.newPassword" name="newPassword"
+                     [class.error]="validationErrors.newPassword" />
+              <small class="error-text" *ngIf="validationErrors.newPassword">{{ validationErrors.newPassword }}</small>
+            </div>
+            <div class="form-group">
+              <label>Xác nhận mật khẩu mới <span class="required">*</span></label>
+              <input type="password" class="form-input" [(ngModel)]="passwordData.confirmPassword" name="confirmPassword"
+                     [class.error]="validationErrors.confirmPassword" />
+              <small class="error-text" *ngIf="validationErrors.confirmPassword">{{ validationErrors.confirmPassword }}</small>
+            </div>
+          </form>
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="cancelChangePassword()">Hủy</button>
+          <button class="btn btn-primary" (click)="changePassword()">Đổi mật khẩu</button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

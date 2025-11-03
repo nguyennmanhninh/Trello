@@ -1,0 +1,149 @@
+@model IEnumerable<StudentManagementSystem.Models.Grade>
+
+@{
+    ViewData["Title"] = "?i?m C?a T�i";
+    var student = ViewBag.Student as StudentManagementSystem.Models.Student;
+    var averageScore = ViewBag.AverageScore as double?;
+    var message = ViewBag.Message as string;
+}
+
+<div class="container-fluid mt-4">
+    @if (!string.IsNullOrEmpty(message))
+    {
+        <div class="alert alert-warning">
+            <i class="bi bi-exclamation-triangle"></i> @message
+        </div>
+    }
+
+    <div class="row mb-4">
+ <div class="col-md-8">
+ <h2><i class="bi bi-graph-up"></i> B?ng ?i?m C?a T�i</h2>
+  </div>
+       <div class="col-md-4">
+ <div class="card bg-primary text-white">
+      <div class="card-body text-center">
+        <h5>?i?m Trung B�nh</h5>
+    <h1>@(averageScore?.ToString("F2") ?? "N/A")</h1>
+ </div>
+      </div>
+   </div>
+    </div>
+
+    @if (student != null)
+    {
+   <div class="card mb-4">
+       <div class="card-body">
+  <div class="row">
+        <div class="col-md-6">
+ <p><strong>M� SV:</strong> @student.StudentId</p>
+     <p><strong>H? t�n:</strong> @student.FullName</p>
+        </div>
+     <div class="col-md-6">
+       <p><strong>L?p:</strong> @student.Class?.ClassName</p>
+ <p><strong>Khoa:</strong> @student.Class?.Department?.DepartmentName</p>
+   </div>
+    </div>
+        </div>
+     </div>
+    }
+
+    <div class="card">
+  <div class="card-header bg-info text-white">
+    <h5 class="mb-0">Chi Ti?t ?i?m</h5>
+   </div>
+<div class="card-body">
+   @if (Model.Any())
+{
+   <div class="table-responsive">
+<table class="table table-hover">
+      <thead class="table-light">
+      <tr>
+   <th>STT</th>
+  <th>M�n H?c</th>
+      <th>Khoa</th>
+       <th>S? T�n Ch?</th>
+    <th>?i?m</th>
+     <th>X?p Lo?i</th>
+</tr>
+     </thead>
+  <tbody>
+      @{
+     int stt = 1;
+     }
+   @foreach (var item in Model)
+     {
+<tr>
+ <td>@(stt++)</td>
+   <td>@item.Course?.CourseName</td>
+       <td>@item.Course?.Department?.DepartmentName</td>
+   <td class="text-center">@item.Course?.Credits</td>
+ <td class="text-center"><strong>@item.Score</strong></td>
+     <td>
+     @{
+  var badgeClass = item.Score >= 9 ? "bg-success" :
+     item.Score >= 8 ? "bg-info" :
+    item.Score >= 7 ? "bg-primary" :
+       item.Score >= 5.5m ? "bg-warning" :
+    item.Score >= 4 ? "bg-orange" : "bg-danger";
+  }
+      <span class="badge @badgeClass">@item.Classification</span>
+ </td>
+   </tr>
+      }
+     </tbody>
+    <tfoot class="table-light">
+ <tr>
+      <td colspan="3" class="text-end"><strong>T?ng:</strong></td>
+     <td class="text-center"><strong>@Model.Sum(g => g.Course?.Credits ?? 0)</strong></td>
+   <td class="text-center"><strong>@(averageScore?.ToString("F2") ?? "N/A")</strong></td>
+    <td></td>
+  </tr>
+   </tfoot>
+   </table>
+       </div>
+
+      <!-- Statistics -->
+       <div class="row mt-4">
+      <div class="col-md-3">
+        <div class="card text-center">
+       <div class="card-body">
+      <h6 class="text-muted">T?ng M�n H?c</h6>
+   <h3>@Model.Count()</h3>
+       </div>
+  </div>
+      </div>
+       <div class="col-md-3">
+     <div class="card text-center">
+   <div class="card-body">
+      <h6 class="text-muted">Xu?t S?c (?9)</h6>
+      <h3 class="text-success">@Model.Count(g => g.Score >= 9)</h3>
+    </div>
+     </div>
+       </div>
+    <div class="col-md-3">
+    <div class="card text-center">
+ <div class="card-body">
+  <h6 class="text-muted">Gi?i (8-9)</h6>
+    <h3 class="text-info">@Model.Count(g => g.Score >= 8 && g.Score < 9)</h3>
+     </div>
+  </div>
+      </div>
+    <div class="col-md-3">
+        <div class="card text-center">
+  <div class="card-body">
+      <h6 class="text-muted">Kh� (7-8)</h6>
+       <h3 class="text-primary">@Model.Count(g => g.Score >= 7 && g.Score < 8)</h3>
+        </div>
+ </div>
+   </div>
+        </div>
+   }
+      else
+      {
+       <div class="alert alert-info">
+     <i class="bi bi-info-circle"></i> Ch?a c� ?i?m n�o ???c nh?p.
+  </div>
+   }
+      </div>
+    </div>
+</div>

@@ -1,0 +1,56 @@
+@model StudentManagementSystem.Models.Grade
+
+@{
+    ViewData["Title"] = "Xóa ?i?m";
+}
+
+<div class="container mt-4">
+    <div class="card border-danger">
+   <div class="card-header bg-danger text-white">
+            <h4 class="mb-0"><i class="bi bi-trash"></i> Xác Nh?n Xóa ?i?m</h4>
+ </div>
+ <div class="card-body">
+       <div class="alert alert-warning">
+       <i class="bi bi-exclamation-triangle"></i> B?n có ch?c ch?n mu?n xóa ?i?m này không?
+            </div>
+
+       <dl class="row">
+     <dt class="col-sm-3">Sinh Viên</dt>
+              <dd class="col-sm-9">@Model.Student?.FullName (@Model.StudentId)</dd>
+
+        <dt class="col-sm-3">L?p</dt>
+      <dd class="col-sm-9">@Model.Student?.Class?.ClassName</dd>
+
+         <dt class="col-sm-3">Môn H?c</dt>
+                <dd class="col-sm-9">@Model.Course?.CourseName (@Model.CourseId)</dd>
+
+    <dt class="col-sm-3">?i?m</dt>
+         <dd class="col-sm-9"><strong>@Model.Score</strong></dd>
+
+   <dt class="col-sm-3">X?p Lo?i</dt>
+  <dd class="col-sm-9">
+         @{
+       var badgeClass = Model.Score >= 9 ? "bg-success" :
+           Model.Score >= 8 ? "bg-info" :
+      Model.Score >= 7 ? "bg-primary" :
+        Model.Score >= 5.5m ? "bg-warning" : "bg-danger";
+           }
+    <span class="badge @badgeClass">@Model.Classification</span>
+      </dd>
+            </dl>
+
+     <form asp-action="Delete" method="post">
+                <input type="hidden" asp-for="StudentId" />
+         <input type="hidden" asp-for="CourseId" />
+       <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+      <button type="submit" class="btn btn-danger">
+ <i class="bi bi-trash"></i> Xác Nh?n Xóa
+         </button>
+    <a asp-action="Index" class="btn btn-secondary">
+   <i class="bi bi-arrow-left"></i> H?y
+             </a>
+       </div>
+          </form>
+        </div>
+    </div>
+</div>

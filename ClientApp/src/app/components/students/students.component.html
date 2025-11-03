@@ -1,0 +1,385 @@
+<div class="students-container">
+  
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">
+      <span class="icon">👨‍🎓</span>
+      Quản lý Sinh viên
+    </h1>
+  </div>
+
+  <!-- Success/Error Messages -->
+  <div class="alert alert-success" *ngIf="successMessage">
+    <span class="alert-icon">✓</span>
+    {{ successMessage }}
+  </div>
+  
+  <div class="alert alert-error" *ngIf="errorMessage">
+    <span class="alert-icon">✕</span>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="filters-row">
+      <!-- Search -->
+      <div class="search-box">
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Tìm kiếm theo mã SV hoặc họ tên..."
+          [(ngModel)]="searchString"
+          (keyup.enter)="search()"
+        />
+        <button class="btn btn-icon" (click)="search()" *ngIf="!searchString">
+          <span class="icon">🔍</span>
+        </button>
+        <button class="btn btn-icon" (click)="clearSearch()" *ngIf="searchString">
+          <span class="icon">✕</span>
+        </button>
+      </div>
+
+      <!-- Department Filter -->
+      <select class="filter-select" [(ngModel)]="selectedDepartmentId" (change)="onDepartmentChange()">
+        <option value="">Tất cả khoa</option>
+        <option *ngFor="let dept of departments" [value]="dept.departmentId">
+          {{ dept.departmentName }}
+        </option>
+      </select>
+
+      <!-- Class Filter -->
+      <select class="filter-select" [(ngModel)]="selectedClassId" (change)="onClassChange()">
+        <option value="">Tất cả lớp</option>
+        <option *ngFor="let cls of filteredClasses" [value]="cls.classId">
+          {{ cls.className }}
+        </option>
+      </select>
+    </div>
+
+    <div class="actions-row">
+      <button class="btn btn-success" (click)="exportToExcel()" *ngIf="userRole === 'Admin' || userRole === 'Teacher'">
+        <span class="icon">📊</span>
+        Xuất Excel
+      </button>
+
+      <button class="btn btn-warning" (click)="exportToPdf()" *ngIf="userRole === 'Admin' || userRole === 'Teacher'">
+        <span class="icon">📄</span>
+        Xuất PDF
+      </button>
+
+      <button class="btn btn-primary" (click)="openAddModal()" *ngIf="userRole === 'Admin' || userRole === 'Teacher'">
+        <span class="icon">+</span>
+        Thêm sinh viên
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Students Table -->
+  <div class="table-container" *ngIf="!isLoading">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>STT</th>
+          <th>Mã SV</th>
+          <th>Họ tên</th>
+          <th>Ngày sinh</th>
+          <th>Giới tính</th>
+          <th>Lớp</th>
+          <th>Khoa</th>
+          <th>Số điện thoại</th>
+          <th class="text-center" *ngIf="userRole === 'Admin' || userRole === 'Teacher'">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let student of students; let i = index">
+          <td>{{ (currentPage - 1) * pageSize + i + 1 }}</td>
+          <td><strong>{{ student.studentId }}</strong></td>
+          <td>{{ student.fullName }}</td>
+          <td>{{ student.dateOfBirth | date: 'dd/MM/yyyy' }}</td>
+          <td>
+            <span class="badge" [class.badge-male]="student.gender" [class.badge-female]="!student.gender">
+              {{ getGenderText(student.gender) }}
+            </span>
+          </td>
+          <td>{{ student.className }}</td>
+          <td>{{ student.departmentName }}</td>
+          <td>{{ student.phone }}</td>
+          <td class="text-center" *ngIf="userRole === 'Admin' || userRole === 'Teacher'">
+            <div class="action-buttons">
+              <button class="btn-action btn-edit" (click)="openEditModal(student)" title="Chỉnh sửa">
+                <span class="icon">✏️</span>
+              </button>
+              <button class="btn-action btn-delete" (click)="openDeleteConfirm(student)" title="Xóa" *ngIf="userRole === 'Admin'">
+                <span class="icon">🗑️</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="students.length === 0">
+          <td [attr.colspan]="userRole === 'Admin' || userRole === 'Teacher' ? 9 : 8" class="text-center empty-state">
+            <div class="empty-icon">📂</div>
+            <p>Không có dữ liệu</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="btn-page" (click)="onPageChange(1)" [disabled]="currentPage === 1">
+        ⏮️
+      </button>
+      <button class="btn-page" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">
+        ◀️
+      </button>
+      
+      <span class="page-info">
+        Trang <strong>{{ currentPage }}</strong> / {{ totalPages }} (Tổng: {{ totalCount }} sinh viên)
+      </span>
+      
+      <button class="btn-page" (click)="onPageChange(currentPage + 1)" [disabled]="currentPage === totalPages">
+        ▶️
+      </button>
+      <button class="btn-page" (click)="onPageChange(totalPages)" [disabled]="currentPage === totalPages">
+        ⏭️
+      </button>
+    </div>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">
+          <i class="icon">{{ isEditMode ? '✏️' : '➕' }}</i>
+          {{ isEditMode ? 'Sửa Sinh Viên' : 'Thêm Sinh Viên' }}
+        </h2>
+        <button class="modal-close" (click)="closeModal()">×</button>
+      </div>
+      
+      <div class="modal-body">
+        <form class="teacher-form">
+          <div class="form-grid">
+            <!-- Student ID -->
+            <div class="form-group">
+              <label class="form-label required">Mã Sinh Viên</label>
+              <input 
+                type="text" 
+                class="form-input"
+                [class.error]="validationErrors.studentId"
+                [(ngModel)]="currentStudent.studentId"
+                name="studentId"
+                [disabled]="isEditMode"
+                maxlength="10"
+                placeholder="Nhập mã sinh viên"
+              />
+              <small class="error-text" *ngIf="validationErrors.studentId">
+                {{ validationErrors.studentId }}
+              </small>
+            </div>
+
+            <!-- Full Name -->
+            <div class="form-group">
+              <label class="form-label required">Họ và Tên</label>
+              <input 
+                type="text" 
+                class="form-input"
+                [class.error]="validationErrors.fullName"
+                [(ngModel)]="currentStudent.fullName"
+                name="fullName"
+                maxlength="100"
+                placeholder="Nhập họ và tên"
+              />
+              <small class="error-text" *ngIf="validationErrors.fullName">
+                {{ validationErrors.fullName }}
+              </small>
+            </div>
+
+            <!-- Date of Birth -->
+            <div class="form-group">
+              <label class="form-label required">Ngày Sinh</label>
+              <input 
+                type="date" 
+                class="form-input"
+                [class.error]="validationErrors.dateOfBirth"
+                [(ngModel)]="currentStudent.dateOfBirth"
+                name="dateOfBirth"
+              />
+              <small class="error-text" *ngIf="validationErrors.dateOfBirth">
+                {{ validationErrors.dateOfBirth }}
+              </small>
+            </div>
+
+            <!-- Gender -->
+            <div class="form-group">
+              <label class="form-label required">Giới Tính</label>
+              <div class="gender-toggle">
+                <button 
+                  type="button"
+                  class="gender-btn" 
+                  [class.active]="currentStudent.gender === true"
+                  (click)="currentStudent.gender = true"
+                >
+                  👨 Nam
+                </button>
+                <button 
+                  type="button"
+                  class="gender-btn" 
+                  [class.active]="currentStudent.gender === false"
+                  (click)="currentStudent.gender = false"
+                >
+                  👩 Nữ
+                </button>
+              </div>
+            </div>
+
+            <!-- Phone -->
+            <div class="form-group">
+              <label class="form-label">Số Điện Thoại</label>
+              <input 
+                type="tel" 
+                class="form-input"
+                [(ngModel)]="currentStudent.phone"
+                name="phone"
+                maxlength="15"
+                placeholder="Nhập số điện thoại"
+              />
+            </div>
+
+            <!-- Address -->
+            <div class="form-group">
+              <label class="form-label">Địa Chỉ</label>
+              <input 
+                type="text" 
+                class="form-input"
+                [(ngModel)]="currentStudent.address"
+                name="address"
+                maxlength="200"
+                placeholder="Nhập địa chỉ"
+              />
+            </div>
+
+            <!-- Class -->
+            <div class="form-group">
+              <label class="form-label required">Khoa</label>
+              <select 
+                class="form-input"
+                [class.error]="validationErrors.classId"
+                [(ngModel)]="currentStudent.classId"
+                name="classId"
+              >
+                <option value="">-- Chọn lớp --</option>
+                <option *ngFor="let cls of classes" [value]="cls.classId">
+                  {{ cls.className }}
+                </option>
+              </select>
+              <small class="error-text" *ngIf="validationErrors.classId">
+                {{ validationErrors.classId }}
+              </small>
+            </div>
+
+            <!-- Username (only for add mode) -->
+            <div class="form-group" *ngIf="!isEditMode">
+              <label class="form-label required">Tên Đăng Nhập</label>
+              <input 
+                type="text" 
+                class="form-input"
+                [class.error]="validationErrors.username"
+                [(ngModel)]="currentStudent.username"
+                name="username"
+                maxlength="50"
+                placeholder="Nhập tên đăng nhập"
+              />
+              <small class="error-text" *ngIf="validationErrors.username">
+                {{ validationErrors.username }}
+              </small>
+            </div>
+
+            <!-- Password (only for add mode) -->
+            <div class="form-group" *ngIf="!isEditMode">
+              <label class="form-label required">Mật Khẩu</label>
+              <input 
+                type="password" 
+                class="form-input"
+                [class.error]="validationErrors.password"
+                [(ngModel)]="currentStudent.password"
+                name="password"
+                maxlength="100"
+                placeholder="Nhập mật khẩu"
+              />
+              <small class="error-text" *ngIf="validationErrors.password">
+                {{ validationErrors.password }}
+              </small>
+            </div>
+          </div>
+        </form>
+      </div>
+      
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" (click)="closeModal()">
+          <i class="icon">✖️</i> Hủy
+        </button>
+        <button type="button" class="btn btn-primary" (click)="saveStudent()">
+          <i class="icon">{{ isEditMode ? '💾' : '➕' }}</i>
+          {{ isEditMode ? 'Cập Nhật' : 'Thêm Mới' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="closeDeleteConfirm()">
+    <div class="modal-content modal-small" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Xác nhận xóa</h2>
+        <button class="modal-close" (click)="closeDeleteConfirm()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="confirm-message">
+          <div class="confirm-icon">⚠️</div>
+          <p>Bạn có chắc chắn muốn xóa sinh viên <strong>{{ studentToDelete?.fullName }}</strong>?</p>
+          
+          <!-- Hiển thị warning nếu sinh viên còn điểm -->
+          <div *ngIf="studentToDelete && studentToDelete.gradeCount && studentToDelete.gradeCount > 0" class="alert alert-warning">
+            <p class="text-danger">
+              <strong>⚠️ Cảnh báo:</strong> Sinh viên này có <strong>{{ studentToDelete.gradeCount }}</strong> điểm số.
+            </p>
+            <p class="text-danger">Bạn cần xóa tất cả điểm trước khi xóa sinh viên.</p>
+          </div>
+          
+          <p *ngIf="!studentToDelete || !studentToDelete.gradeCount || studentToDelete.gradeCount === 0" class="text-warning">
+            Hành động này không thể hoàn tác!
+          </p>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeDeleteConfirm()">Hủy</button>
+        
+        <!-- Nút xóa tất cả điểm (chỉ hiện nếu có điểm) -->
+        <button 
+          *ngIf="studentToDelete && studentToDelete.gradeCount && studentToDelete.gradeCount > 0"
+          class="btn btn-warning" 
+          (click)="deleteAllGrades()">
+          🗑️ Xóa tất cả {{ studentToDelete.gradeCount }} điểm
+        </button>
+        
+        <!-- Nút xóa sinh viên (disable nếu còn điểm) -->
+        <button 
+          class="btn btn-danger" 
+          (click)="confirmDelete()"
+          [disabled]="studentToDelete && studentToDelete.gradeCount && studentToDelete.gradeCount > 0">
+          {{ (studentToDelete && studentToDelete.gradeCount && studentToDelete.gradeCount > 0) ? '🔒 Không thể xóa' : 'Xóa sinh viên' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+</div>

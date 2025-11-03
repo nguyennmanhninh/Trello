@@ -1,0 +1,54 @@
+@model StudentManagementSystem.Models.Department
+
+@{
+    ViewData["Title"] = "S?a Khoa";
+}
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+   <div class="col-md-6">
+            <div class="card">
+   <div class="card-header bg-warning text-white">
+ <h4 class="mb-0"><i class="bi bi-pencil"></i> S?a Th�ng Tin Khoa</h4>
+   </div>
+   <div class="card-body">
+       <form asp-action="Edit">
+      <div asp-validation-summary="ModelOnly" class="text-danger mb-3"></div>
+            
+                        <input type="hidden" asp-for="DepartmentId" />
+
+                        <div class="mb-3">
+                            <label asp-for="DepartmentId" class="form-label"></label>
+                            <input asp-for="DepartmentId" class="form-control" readonly />
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="DepartmentCode" class="form-label"></label>
+                            <input asp-for="DepartmentCode" class="form-control" />
+                            <span asp-validation-for="DepartmentCode" class="text-danger"></span>
+                        </div>
+
+                        <div class="mb-3">
+                            <label asp-for="DepartmentName" class="form-label"></label>
+                            <input asp-for="DepartmentName" class="form-control" />
+                            <span asp-validation-for="DepartmentName" class="text-danger"></span>
+                        </div>
+
+       <div class="d-grid gap-2">
+    <button type="submit" class="btn btn-warning">
+   <i class="bi bi-save"></i> C?p Nh?t
+         </button>
+     <a asp-action="Index" class="btn btn-secondary">
+   <i class="bi bi-arrow-left"></i> Quay l?i
+</a>
+      </div>
+    </form>
+     </div>
+          </div>
+    </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
+}

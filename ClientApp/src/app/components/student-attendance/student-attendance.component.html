@@ -1,0 +1,230 @@
+<div class="student-attendance-container">
+  <!-- Loading State -->
+  <div *ngIf="loading" class="loading-spinner">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Error Message -->
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span class="alert-icon">⚠️</span>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Main Content -->
+  <div *ngIf="!loading" class="content">
+    <!-- Page Header -->
+    <div class="page-header">
+      <h1>📋 Điểm Danh Của Tôi</h1>
+      <p class="subtitle">Xem lịch sử điểm danh và thống kê tỷ lệ đi học</p>
+    </div>
+
+    <!-- Overall Statistics Cards -->
+    <div class="overall-stats">
+      <div class="stat-card total">
+        <div class="stat-icon">📚</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ overallStats.total }}</div>
+          <div class="stat-label">Tổng buổi học</div>
+        </div>
+      </div>
+      <div class="stat-card present">
+        <div class="stat-icon">✓</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ overallStats.present }}</div>
+          <div class="stat-label">Có mặt</div>
+        </div>
+      </div>
+      <div class="stat-card absent">
+        <div class="stat-icon">✗</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ overallStats.absent }}</div>
+          <div class="stat-label">Vắng</div>
+        </div>
+      </div>
+      <div class="stat-card late">
+        <div class="stat-icon">⏰</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ overallStats.late }}</div>
+          <div class="stat-label">Muộn</div>
+        </div>
+      </div>
+      <div class="stat-card excused">
+        <div class="stat-icon">📝</div>
+        <div class="stat-info">
+          <div class="stat-value">{{ overallStats.excused }}</div>
+          <div class="stat-label">Có phép</div>
+        </div>
+      </div>
+      <div class="stat-card rate" [style.borderColor]="getAttendanceRateColor(overallStats.rate)">
+        <div class="stat-icon">📊</div>
+        <div class="stat-info">
+          <div class="stat-value" [style.color]="getAttendanceRateColor(overallStats.rate)">{{ overallStats.rate }}%</div>
+          <div class="stat-label">Tỷ lệ đi học</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Warning Alert -->
+    <div *ngIf="warnings.length > 0" class="warning-alert">
+      <span class="warning-icon">⚠️</span>
+      <div class="warning-content">
+        <strong>Cảnh báo điểm danh!</strong>
+        <p>Bạn có {{ warnings.length }} môn học với tỷ lệ vắng cao. Vui lòng chú ý tham gia lớp học đầy đủ.</p>
+      </div>
+    </div>
+
+    <!-- Tabs Navigation -->
+    <div class="tabs">
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'records'"
+        (click)="switchTab('records')">
+        📋 Lịch sử điểm danh
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'statistics'"
+        (click)="switchTab('statistics')">
+        📊 Thống kê theo môn
+      </button>
+      <button 
+        class="tab-btn" 
+        [class.active]="activeTab === 'warnings'"
+        (click)="switchTab('warnings')"
+        *ngIf="warnings.length > 0">
+        ⚠️ Cảnh báo ({{ warnings.length }})
+      </button>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      <!-- Records Tab -->
+      <div *ngIf="activeTab === 'records'" class="records-tab">
+        <!-- Filter -->
+        <div class="filter-section">
+          <label>Lọc theo môn học:</label>
+          <select [(ngModel)]="selectedCourseId" class="filter-select">
+            <option value="All">Tất cả môn học</option>
+            <option *ngFor="let course of courses" [value]="course.courseId">
+              {{ course.courseName }}
+            </option>
+          </select>
+        </div>
+
+        <!-- Records Timeline -->
+        <div class="timeline">
+          <div *ngFor="let record of filteredRecords" class="timeline-item">
+            <div class="timeline-marker" [class]="getStatusClass(record.status)"></div>
+            <div class="timeline-content">
+              <div class="record-header">
+                <div class="record-title">
+                  <h3>{{ record.sessionTitle || record.courseName || 'Buổi học' }}</h3>
+                  <span class="badge" [class]="getStatusClass(record.status)">
+                    {{ getStatusLabel(record.status) }}
+                  </span>
+                </div>
+                <div class="record-date">
+                  {{ formatDate(record.sessionDate) }}
+                  <span class="time">{{ formatTime(record.sessionTime) }}</span>
+                </div>
+              </div>
+              <div class="record-details">
+                <p><strong>Môn học:</strong> {{ record.courseName || 'Không xác định' }}</p>
+                <p><strong>Địa điểm:</strong> {{ record.location || 'Chưa xác định' }}</p>
+                <p *ngIf="record.checkInTime"><strong>Giờ check-in:</strong> {{ record.checkInTime }}</p>
+                <p *ngIf="record.notes" class="notes"><strong>Ghi chú:</strong> {{ record.notes }}</p>
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="filteredRecords.length === 0" class="empty-state">
+            <p>Chưa có dữ liệu điểm danh</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics Tab -->
+      <div *ngIf="activeTab === 'statistics'" class="statistics-tab">
+        <div class="statistics-grid">
+          <div *ngFor="let stat of statistics" class="stat-course-card">
+            <div class="course-header">
+              <h3>{{ stat.courseName }}</h3>
+              <div class="attendance-rate" [style.color]="getAttendanceRateColor(stat.attendanceRate)">
+                {{ stat.attendanceRate }}%
+              </div>
+            </div>
+            <div class="course-stats">
+              <div class="stat-row">
+                <span class="stat-label">Tổng buổi học:</span>
+                <span class="stat-value">{{ stat.totalSessions }}</span>
+              </div>
+              <div class="stat-row present">
+                <span class="stat-label">✓ Có mặt:</span>
+                <span class="stat-value">{{ stat.presentCount }}</span>
+              </div>
+              <div class="stat-row absent">
+                <span class="stat-label">✗ Vắng:</span>
+                <span class="stat-value">{{ stat.absentCount }}</span>
+              </div>
+              <div class="stat-row late">
+                <span class="stat-label">⏰ Muộn:</span>
+                <span class="stat-value">{{ stat.lateCount }}</span>
+              </div>
+              <div class="stat-row excused">
+                <span class="stat-label">📝 Có phép:</span>
+                <span class="stat-value">{{ stat.excusedCount }}</span>
+              </div>
+            </div>
+            <div class="progress-bar">
+              <div class="progress-fill" 
+                   [style.width.%]="stat.attendanceRate"
+                   [style.backgroundColor]="getAttendanceRateColor(stat.attendanceRate)">
+              </div>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="statistics.length === 0" class="empty-state">
+            <p>Chưa có thống kê</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Warnings Tab -->
+      <div *ngIf="activeTab === 'warnings'" class="warnings-tab">
+        <div class="warnings-list">
+          <div *ngFor="let warning of warnings" class="warning-card">
+            <div class="warning-header">
+              <span class="warning-icon-large">⚠️</span>
+              <div class="warning-info">
+                <h3>Cảnh báo vắng nhiều</h3>
+                <p class="warning-subtitle">Tỷ lệ vắng: {{ warning.absentRate }}%</p>
+              </div>
+            </div>
+            <div class="warning-details">
+              <div class="detail-row">
+                <span class="label">Tổng buổi học:</span>
+                <span class="value">{{ warning.totalSessions }}</span>
+              </div>
+              <div class="detail-row">
+                <span class="label">Số buổi vắng:</span>
+                <span class="value danger">{{ warning.absentCount }}</span>
+              </div>
+            </div>
+            <div class="warning-action">
+              <p>⚠️ Vui lòng chú ý tham gia lớp học đầy đủ để tránh ảnh hưởng đến kết quả học tập.</p>
+            </div>
+          </div>
+
+          <!-- Empty State -->
+          <div *ngIf="warnings.length === 0" class="empty-state success">
+            <span class="success-icon">✓</span>
+            <p>Tuyệt vời! Bạn không có cảnh báo nào.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

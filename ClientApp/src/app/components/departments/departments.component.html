@@ -1,0 +1,185 @@
+<div class="departments-container">
+  
+  <!-- Header -->
+  <div class="page-header">
+    <h1 class="page-title">
+      <span class="icon">🏢</span>
+      Quản lý Khoa
+    </h1>
+  </div>
+
+  <!-- Success/Error Messages -->
+  <div class="alert alert-success" *ngIf="successMessage">
+    <span class="alert-icon">✓</span>
+    {{ successMessage }}
+  </div>
+  
+  <div class="alert alert-error" *ngIf="errorMessage">
+    <span class="alert-icon">✕</span>
+    {{ errorMessage }}
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="search-box">
+      <input 
+        type="text" 
+        class="search-input" 
+        placeholder="Tìm kiếm theo mã khoa hoặc tên khoa..."
+        [(ngModel)]="searchString"
+        (keyup.enter)="search()"
+      />
+      <button class="btn btn-icon" (click)="search()" *ngIf="!searchString">
+        <span class="icon">🔍</span>
+      </button>
+      <button class="btn btn-icon" (click)="clearSearch()" *ngIf="searchString">
+        <span class="icon">✕</span>
+      </button>
+    </div>
+    
+    <button class="btn btn-primary" (click)="openAddModal()">
+      <span class="icon">+</span>
+      Thêm khoa mới
+    </button>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="isLoading">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Departments Table -->
+  <div class="table-container" *ngIf="!isLoading">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>STT</th>
+          <th>Mã khoa (ID)</th>
+          <th>Mã khoa (Code)</th>
+          <th>Tên khoa</th>
+          <th class="text-center">Thao tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let dept of departments; let i = index">
+          <td>{{ i + 1 }}</td>
+          <td><strong>{{ dept.departmentId }}</strong></td>
+          <td><span class="badge">{{ dept.departmentCode }}</span></td>
+          <td>{{ dept.departmentName }}</td>
+          <td class="text-center">
+            <div class="action-buttons">
+              <button class="btn-action btn-edit" (click)="openEditModal(dept)" title="Chỉnh sửa">
+                <span class="icon">✏️</span>
+              </button>
+              <button class="btn-action btn-delete" (click)="openDeleteConfirm(dept)" title="Xóa">
+                <span class="icon">🗑️</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+        <tr *ngIf="departments.length === 0">
+          <td colspan="5" class="text-center empty-state">
+            <div class="empty-icon">📂</div>
+            <p>Không có dữ liệu</p>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Add/Edit Modal -->
+  <div class="modal-overlay" *ngIf="showModal" (click)="closeModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">{{ isEditMode ? 'Cập nhật khoa' : 'Thêm khoa mới' }}</h2>
+        <button class="modal-close" (click)="closeModal()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">
+            Mã khoa (ID) <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            class="form-input"
+            [class.error]="validationErrors.departmentId"
+            [(ngModel)]="currentDepartment.departmentId"
+            [disabled]="isEditMode"
+            placeholder="Ví dụ: DEPT001"
+            maxlength="10"
+          />
+          <small class="error-text" *ngIf="validationErrors.departmentId">
+            {{ validationErrors.departmentId }}
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Mã khoa (Code) <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            class="form-input"
+            [class.error]="validationErrors.departmentCode"
+            [(ngModel)]="currentDepartment.departmentCode"
+            placeholder="Ví dụ: CNTT"
+            maxlength="20"
+          />
+          <small class="error-text" *ngIf="validationErrors.departmentCode">
+            {{ validationErrors.departmentCode }}
+          </small>
+        </div>
+
+        <div class="form-group">
+          <label class="form-label">
+            Tên khoa <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            class="form-input"
+            [class.error]="validationErrors.departmentName"
+            [(ngModel)]="currentDepartment.departmentName"
+            placeholder="Ví dụ: Công nghệ thông tin"
+            maxlength="100"
+          />
+          <small class="error-text" *ngIf="validationErrors.departmentName">
+            {{ validationErrors.departmentName }}
+          </small>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeModal()">Hủy</button>
+        <button class="btn btn-primary" (click)="saveDepartment()">
+          {{ isEditMode ? 'Cập nhật' : 'Thêm mới' }}
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Delete Confirmation Modal -->
+  <div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="closeDeleteConfirm()">
+    <div class="modal-content modal-small" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2 class="modal-title">Xác nhận xóa</h2>
+        <button class="modal-close" (click)="closeDeleteConfirm()">✕</button>
+      </div>
+      
+      <div class="modal-body">
+        <div class="confirm-message">
+          <div class="confirm-icon">⚠️</div>
+          <p>Bạn có chắc chắn muốn xóa khoa <strong>{{ departmentToDelete?.departmentName }}</strong>?</p>
+          <p class="text-warning">Hành động này không thể hoàn tác!</p>
+        </div>
+      </div>
+      
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeDeleteConfirm()">Hủy</button>
+        <button class="btn btn-danger" (click)="confirmDelete()">Xóa</button>
+      </div>
+    </div>
+  </div>
+
+</div>

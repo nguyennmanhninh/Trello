@@ -1,0 +1,80 @@
+@model IEnumerable<StudentManagementSystem.Models.Course>
+
+@{
+    ViewData["Title"] = "Quản Lý Môn Học";
+  var userRole = Context.Session.GetString("UserRole");
+}
+
+<div class="container-fluid mt-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h2><i class="bi bi-book"></i> Quản Lý Môn Học</h2>
+        @if (userRole == "Admin" || userRole == "Teacher")
+    {
+            <a asp-action="Create" class="btn btn-primary">
+          <i class="bi bi-plus-circle"></i> Thêm Môn Học
+            </a>
+        }
+    </div>
+
+    <div class="card">
+<div class="card-body">
+            <div class="table-responsive">
+          <table class="table table-hover table-striped">
+         <thead class="table-dark">
+        <tr>
+          <th>Mã MH</th>
+             <th>Tên Môn Học</th>
+    <th>Số Tín Chỉ</th>
+         <th>Khoa</th>
+        <th>Giảng Viên</th>
+        @if (userRole == "Admin" || userRole == "Teacher")
+           {
+   <th style="width: 150px;">Thao Tác</th>
+   }
+        </tr>
+       </thead>
+  <tbody>
+     @foreach (var item in Model)
+      {
+     <tr>
+              <td><strong>@item.CourseId</strong></td>
+           <td>@item.CourseName</td>
+       <td class="text-center">
+          <span class="badge bg-primary">@item.Credits TC</span>
+    </td>
+   <td>@item.Department?.DepartmentName</td>
+    <td>@item.Teacher?.FullName</td>
+    @if (userRole == "Admin" || userRole == "Teacher")
+             {
+     <td>
+              <div class="btn-group" role="group">
+       <a asp-action="Details" asp-route-id="@item.CourseId" 
+     class="btn btn-sm btn-info" title="Chi tiết">
+     <i class="bi bi-eye"></i>
+         </a>
+  <a asp-action="Edit" asp-route-id="@item.CourseId" 
+     class="btn btn-sm btn-warning" title="Sửa">
+           <i class="bi bi-pencil"></i>
+       </a>
+        <a asp-action="Delete" asp-route-id="@item.CourseId" 
+               class="btn btn-sm btn-danger" title="Xóa">
+         <i class="bi bi-trash"></i>
+    </a>
+      </div>
+        </td>
+       }
+    </tr>
+  }
+                    </tbody>
+  </table>
+         </div>
+
+            @if (!Model.Any())
+  {
+     <div class="alert alert-info mt-3">
+                    <i class="bi bi-info-circle"></i> Ch?a c� m�n h?c n�o.
+     </div>
+        }
+        </div>
+    </div>
+</div>

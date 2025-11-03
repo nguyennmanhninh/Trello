@@ -1,0 +1,88 @@
+<div class="layout-container">
+  
+  <!-- Sidebar -->
+  <aside class="sidebar" [class.open]="isSidebarOpen" [class.mobile-open]="isMobileMenuOpen">
+    <div class="sidebar-header">
+      <div class="logo">
+        <span class="logo-icon">🎓</span>
+        <span class="logo-text" *ngIf="isSidebarOpen">Student MS</span>
+      </div>
+      <button class="sidebar-toggle desktop-only" (click)="toggleSidebar()" *ngIf="isSidebarOpen">
+        <span class="icon">{{ isSidebarOpen ? '◀' : '▶' }}</span>
+      </button>
+    </div>
+
+    <!-- User Profile Section -->
+    <div class="user-profile" *ngIf="isSidebarOpen">
+      <div class="user-avatar">
+        <span class="avatar-text">{{ userName.charAt(0).toUpperCase() }}</span>
+      </div>
+      <div class="user-info">
+        <h4 class="user-name">{{ userName }}</h4>
+        <p class="user-email">{{ userEmail }}</p>
+        <span class="user-role" [ngClass]="getRoleBadgeClass()">{{ userRole }}</span>
+      </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+      <ul class="nav-list">
+        <li class="nav-item" *ngFor="let item of menuItems">
+          <a 
+            *ngIf="hasAccess(item.roles)"
+            [routerLink]="item.route" 
+            class="nav-link"
+            [class.active]="isActive(item.route)"
+            (click)="closeMobileMenu()"
+          >
+            <span class="nav-icon">{{ item.icon }}</span>
+            <span class="nav-label" *ngIf="isSidebarOpen">{{ item.label }}</span>
+            <span class="nav-badge" *ngIf="item.badge && isSidebarOpen">{{ item.badge }}</span>
+          </a>
+        </li>
+      </ul>
+    </nav>
+
+    <!-- Logout Button -->
+    <div class="sidebar-footer">
+      <button class="logout-btn" (click)="logout()">
+        <span class="nav-icon">🚪</span>
+        <span class="nav-label" *ngIf="isSidebarOpen">Đăng xuất</span>
+      </button>
+    </div>
+  </aside>
+
+  <!-- Mobile Overlay -->
+  <div class="mobile-overlay" *ngIf="isMobileMenuOpen" (click)="closeMobileMenu()"></div>
+
+  <!-- Main Content -->
+  <div class="main-content" [class.sidebar-open]="isSidebarOpen">
+    
+    <!-- Top Bar -->
+    <header class="topbar">
+      <div class="topbar-left">
+        <button class="menu-toggle" (click)="toggleSidebar()">
+          <span class="hamburger-icon">☰</span>
+        </button>
+        <h1 class="page-title">Student Management System</h1>
+      </div>
+      
+      <div class="topbar-right">
+        <div class="user-menu">
+          <span class="user-greeting">Xin chào, <strong>{{ userName }}</strong></span>
+          <div class="user-avatar-small">
+            {{ userName.charAt(0).toUpperCase() }}
+          </div>
+        </div>
+      </div>
+    </header>
+
+    <!-- Page Content -->
+    <main class="content-area">
+      <router-outlet></router-outlet>
+    </main>
+
+  </div>
+
+  <!-- Floating AI Chat - REMOVED (using app-ai-rag-chat in app.component.html instead) -->
+</div>

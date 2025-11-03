@@ -1,0 +1,388 @@
+.dashboard-student {
+  padding: 2rem;
+  max-width: 1400px;
+  margin: 0 auto;
+}
+
+.dashboard-header {
+  margin-bottom: 2rem;
+
+  h1 {
+    color: var(--text-primary);
+    margin: 0 0 0.5rem 0;
+    font-size: 2rem;
+  }
+
+  .subtitle {
+    color: var(--text-secondary);
+    margin: 0;
+  }
+}
+
+// Loading & Error States
+.loading-container,
+.error-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 4rem 2rem;
+  text-align: center;
+}
+
+.spinner {
+  width: 50px;
+  height: 50px;
+  border: 4px solid var(--neutral-200);
+  border-top-color: var(--success-500);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.error-message {
+  color: var(--error-500);
+  margin-bottom: 1rem;
+}
+
+.btn-retry {
+  background: var(--success-500);
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 1rem;
+
+  &:hover {
+    background: var(--success-600);
+  }
+}
+
+// Summary Grid
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+}
+
+.summary-card {
+  background: white;
+  border-radius: 12px;
+  padding: 1.5rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  transition: transform 0.2s, box-shadow 0.2s;
+
+  &:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15);
+  }
+
+  .card-icon {
+    font-size: 3rem;
+  }
+
+  .card-info {
+    flex: 1;
+
+    h3 {
+      font-size: 2rem;
+      margin: 0 0 0.25rem 0;
+      color: var(--text-primary);
+    }
+
+    p {
+      margin: 0;
+      color: var(--text-secondary);
+      font-size: 0.95rem;
+    }
+
+    small {
+      display: block;
+      color: var(--text-tertiary);
+      font-size: 0.85rem;
+      margin-top: 0.25rem;
+    }
+  }
+}
+
+.card-class .card-icon { color: #27ae60; }
+.card-average .card-icon { color: #4a90e2; }
+.card-courses .card-icon { color: #9b59b6; }
+.card-credits .card-icon { color: #f39c12; }
+
+// Chart Section
+.chart-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.chart-container {
+  height: 400px;
+}
+
+// Grades Section
+.grades-section {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  margin-bottom: 2rem;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+
+  h2 {
+    margin: 0;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+  }
+
+  .view-all-link {
+    color: var(--primary-500);
+    text-decoration: none;
+    font-weight: 500;
+
+    &:hover {
+      color: var(--primary-600);
+      text-decoration: underline;
+    }
+  }
+}
+
+.empty-state {
+  text-align: center;
+  padding: 3rem 2rem;
+  color: var(--text-secondary);
+  font-style: italic;
+}
+
+// Grades Table
+.grades-table-container {
+  overflow-x: auto;
+}
+
+.grades-table {
+  width: 100%;
+  border-collapse: collapse;
+  
+  th, td {
+    padding: 1rem;
+    text-align: left;
+    border-bottom: 1px solid var(--neutral-200);
+  }
+
+  th {
+    background: var(--neutral-50);
+    font-weight: 600;
+    color: var(--text-primary);
+    position: sticky;
+    top: 0;
+  }
+
+  tbody tr {
+    transition: background 0.2s;
+
+    &:hover {
+      background: var(--neutral-50);
+    }
+  }
+
+  tfoot {
+    tr {
+      background: var(--primary-50);
+      font-weight: 600;
+    }
+
+    td {
+      border-bottom: none;
+      border-top: 2px solid var(--primary-300);
+    }
+  }
+
+  .text-center {
+    text-align: center;
+  }
+}
+
+// Badges
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.75rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.badge-credits {
+  background: var(--warning-100);
+  color: var(--warning-700);
+}
+
+.score-badge {
+  display: inline-block;
+  padding: 0.35rem 0.85rem;
+  border-radius: 6px;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.score-excellent {
+  background: var(--success-100);
+  color: var(--success-700);
+}
+
+.score-good {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.score-fair {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.score-average {
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+.score-weak {
+  background: var(--error-100);
+  color: var(--error-700);
+}
+
+.classification-badge {
+  display: inline-block;
+  padding: 0.35rem 0.85rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.grade-excellent {
+  background: var(--success-100);
+  color: var(--success-700);
+}
+
+.grade-good {
+  background: #dbeafe;
+  color: #1e40af;
+}
+
+.grade-fair {
+  background: #fef3c7;
+  color: #92400e;
+}
+
+.grade-average {
+  background: #fed7aa;
+  color: #9a3412;
+}
+
+.grade-weak,
+.grade-poor {
+  background: var(--error-100);
+  color: var(--error-700);
+}
+
+// Quick Actions
+.quick-actions {
+  background: white;
+  border-radius: 12px;
+  padding: 2rem;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+
+  h2 {
+    margin: 0 0 1.5rem 0;
+    color: var(--text-primary);
+    font-size: 1.5rem;
+  }
+}
+
+.actions-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 1rem;
+}
+
+.action-btn {
+  background: var(--success-50);
+  border: 2px solid var(--success-200);
+  color: var(--success-700);
+  padding: 1rem;
+  border-radius: 8px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  font-size: 1rem;
+  font-weight: 500;
+  transition: all 0.2s;
+
+  .action-icon {
+    font-size: 1.5rem;
+  }
+
+  &:hover {
+    background: var(--success-100);
+    border-color: var(--success-400);
+    transform: translateY(-2px);
+  }
+}
+
+// Responsive Design
+@media (max-width: 768px) {
+  .dashboard-student {
+    padding: 1rem;
+  }
+
+  .dashboard-header h1 {
+    font-size: 1.5rem;
+  }
+
+  .summary-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .summary-card {
+    .card-info h3 {
+      font-size: 1.75rem;
+    }
+  }
+
+  .chart-container {
+    height: 300px;
+  }
+
+  .grades-table {
+    th, td {
+      padding: 0.75rem 0.5rem;
+      font-size: 0.9rem;
+    }
+  }
+
+  .actions-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .section-header {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+}

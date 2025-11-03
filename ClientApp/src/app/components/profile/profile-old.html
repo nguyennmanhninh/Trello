@@ -1,0 +1,331 @@
+<div class="profile-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-title">
+      <span class="icon">👤</span>
+      Thông Tin Cá Nhân
+      <span class="role-badge" [class.role-admin]="isAdmin()" [class.role-teacher]="isTeacher()" [class.role-student]="isStudent()">
+        {{ userRole }}
+      </span>
+    </h1>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <span class="alert-icon">✓</span>
+    <span>{{ successMessage }}</span>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span class="alert-icon">✕</span>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading && !profileData" class="loading-container">
+    <div class="spinner"></div>
+    <p>Đang tải thông tin...</p>
+  </div>
+
+  <!-- Profile Content -->
+  <div *ngIf="!loading && profileData" class="profile-content">
+    
+    <!-- ==================== STUDENT PROFILE ==================== -->
+    <div *ngIf="isStudent()" class="student-profile">
+      <div *ngIf="!isEditMode" class="profile-view">
+        <div class="profile-card">
+          <div class="profile-avatar">
+            <div class="avatar-circle" [class.male]="getStudentData()?.gender" [class.female]="!getStudentData()?.gender">
+              {{ getStudentData()?.fullName?.charAt(0) || 'S' }}
+            </div>
+          </div>
+
+          <div class="profile-info">
+            <div class="info-row">
+              <label>Mã sinh viên:</label>
+              <span class="value">{{ getStudentData()?.studentId }}</span>
+            </div>
+            <div class="info-row">
+              <label>Họ và tên:</label>
+              <span class="value">{{ getStudentData()?.fullName }}</span>
+            </div>
+            <div class="info-row">
+              <label>Ngày sinh:</label>
+              <span class="value">{{ formatDate(getStudentData()?.dateOfBirth) }}</span>
+            </div>
+            <div class="info-row">
+              <label>Giới tính:</label>
+              <span class="value">{{ getGenderText(getStudentData()?.gender) }}</span>
+            </div>
+            <div class="info-row">
+              <label>Email:</label>
+              <span class="value">{{ getStudentData()?.email || 'Chưa cập nhật' }}</span>
+            </div>
+            <div class="info-row">
+              <label>Số điện thoại:</label>
+              <span class="value">{{ getStudentData()?.phone || 'Chưa cập nhật' }}</span>
+            </div>
+            <div class="info-row">
+              <label>Địa chỉ:</label>
+              <span class="value">{{ getStudentData()?.address || 'Chưa cập nhật' }}</span>
+            </div>
+            <div class="info-row">
+              <label>Lớp:</label>
+              <span class="value">{{ getStudentData()?.className || 'Chưa có lớp' }}</span>
+            </div>
+            <div class="info-row" *ngIf="getStudentData()?.departmentName">
+              <label>Khoa:</label>
+              <span class="value">{{ getStudentData()?.departmentName }}</span>
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            <button class="btn btn-primary" (click)="enableEditMode()">
+              <span class="icon">✏️</span>
+              Chỉnh sửa thông tin
+            </button>
+            <button class="btn btn-secondary" (click)="openChangePassword()">
+              <span class="icon">🔒</span>
+              Đổi mật khẩu
+            </button>
+          </div>
+        </div>
+
+        <div class="info-note">
+          <p><strong>Lưu ý:</strong> Bạn chỉ có thể chỉnh sửa Email, Số điện thoại và Địa chỉ. 
+          Để thay đổi các thông tin khác, vui lòng liên hệ phòng Đào tạo.</p>
+        </div>
+      </div>
+
+      <!-- Student Edit Mode -->
+      <div *ngIf="isEditMode && editedStudent" class="profile-edit">
+        <div class="profile-card">
+          <h2 class="section-title">Chỉnh sửa thông tin</h2>
+          <form class="profile-form">
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" [class.error]="validationErrors.email"
+                [(ngModel)]="editedStudent.email" name="email" placeholder="example@email.com" />
+              <small class="error-text" *ngIf="validationErrors.email">{{ validationErrors.email }}</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Số điện thoại</label>
+              <input type="tel" class="form-input" [class.error]="validationErrors.phone"
+                [(ngModel)]="editedStudent.phone" name="phone" placeholder="0123456789" maxlength="11" />
+              <small class="error-text" *ngIf="validationErrors.phone">{{ validationErrors.phone }}</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Địa chỉ</label>
+              <textarea class="form-input" [(ngModel)]="editedStudent.address" name="address" rows="3"
+                placeholder="Nhập địa chỉ"></textarea>
+            </div>
+          </form>
+          <div class="profile-actions">
+            <button class="btn btn-secondary" (click)="cancelEdit()">Hủy</button>
+            <button class="btn btn-primary" (click)="saveProfile()" [disabled]="loading">
+              <span class="icon">💾</span>{{ loading ? 'Đang lưu...' : 'Lưu thay đổi' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== TEACHER PROFILE ==================== -->
+    <div *ngIf="isTeacher()" class="teacher-profile">
+      <div *ngIf="!isEditMode" class="profile-view">
+        <div class="profile-card">
+          <div class="profile-avatar">
+            <div class="avatar-circle teacher" [class.male]="getTeacherData()?.gender" [class.female]="!getTeacherData()?.gender">
+              {{ getTeacherData()?.fullName?.charAt(0) || 'T' }}
+            </div>
+          </div>
+
+          <div class="profile-info">
+            <div class="info-row">
+              <label>Mã giáo viên:</label>
+              <span class="value">{{ getTeacherData()?.teacherId }}</span>
+            </div>
+            <div class="info-row">
+              <label>Họ và tên:</label>
+              <span class="value">{{ getTeacherData()?.fullName }}</span>
+            </div>
+            <div class="info-row">
+              <label>Ngày sinh:</label>
+              <span class="value">{{ formatDate(getTeacherData()?.dateOfBirth) }}</span>
+            </div>
+            <div class="info-row">
+              <label>Giới tính:</label>
+              <span class="value">{{ getGenderText(getTeacherData()?.gender) }}</span>
+            </div>
+            <div class="info-row">
+              <label>Email:</label>
+              <span class="value">{{ getTeacherData()?.email || 'Chưa cập nhật' }}</span>
+            </div>
+            <div class="info-row">
+              <label>Số điện thoại:</label>
+              <span class="value">{{ getTeacherData()?.phone || 'Chưa cập nhật' }}</span>
+            </div>
+            <div class="info-row">
+              <label>Địa chỉ:</label>
+              <span class="value">{{ getTeacherData()?.address || 'Chưa cập nhật' }}</span>
+            </div>
+            <div class="info-row" *ngIf="getTeacherData()?.departmentName">
+              <label>Khoa:</label>
+              <span class="value">{{ getTeacherData()?.departmentName }}</span>
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            <button class="btn btn-primary" (click)="enableEditMode()">
+              <span class="icon">✏️</span>
+              Chỉnh sửa thông tin
+            </button>
+            <button class="btn btn-secondary" (click)="openChangePassword()">
+              <span class="icon">🔒</span>
+              Đổi mật khẩu
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Teacher Edit Mode -->
+      <div *ngIf="isEditMode && editedTeacher" class="profile-edit">
+        <div class="profile-card">
+          <h2 class="section-title">Chỉnh sửa thông tin</h2>
+          <form class="profile-form">
+            <div class="form-group">
+              <label class="form-label required">Họ và tên</label>
+              <input type="text" class="form-input" [class.error]="validationErrors.fullName"
+                [(ngModel)]="editedTeacher.fullName" name="fullName" placeholder="Nhập họ và tên" />
+              <small class="error-text" *ngIf="validationErrors.fullName">{{ validationErrors.fullName }}</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Ngày sinh</label>
+              <input type="date" class="form-input" [(ngModel)]="editedTeacher.dateOfBirth" name="dateOfBirth" />
+            </div>
+            <div class="form-group">
+              <label class="form-label">Giới tính</label>
+              <div class="gender-toggle">
+                <button type="button" class="gender-btn" [class.active]="editedTeacher.gender === true"
+                  (click)="editedTeacher.gender = true">
+                  👨 Nam
+                </button>
+                <button type="button" class="gender-btn" [class.active]="editedTeacher.gender === false"
+                  (click)="editedTeacher.gender = false">
+                  👩 Nữ
+                </button>
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Email</label>
+              <input type="email" class="form-input" [class.error]="validationErrors.email"
+                [(ngModel)]="editedTeacher.email" name="email" placeholder="example@email.com" />
+              <small class="error-text" *ngIf="validationErrors.email">{{ validationErrors.email }}</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Số điện thoại</label>
+              <input type="tel" class="form-input" [class.error]="validationErrors.phone"
+                [(ngModel)]="editedTeacher.phone" name="phone" placeholder="0123456789" maxlength="11" />
+              <small class="error-text" *ngIf="validationErrors.phone">{{ validationErrors.phone }}</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Địa chỉ</label>
+              <textarea class="form-input" [(ngModel)]="editedTeacher.address" name="address" rows="3"
+                placeholder="Nhập địa chỉ"></textarea>
+            </div>
+          </form>
+          <div class="profile-actions">
+            <button class="btn btn-secondary" (click)="cancelEdit()">Hủy</button>
+            <button class="btn btn-primary" (click)="saveProfile()" [disabled]="loading">
+              <span class="icon">💾</span>{{ loading ? 'Đang lưu...' : 'Lưu thay đổi' }}
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== ADMIN PROFILE ==================== -->
+    <div *ngIf="isAdmin()" class="admin-profile">
+      <div class="profile-view">
+        <div class="profile-card">
+          <div class="profile-avatar">
+            <div class="avatar-circle admin">
+              {{ getAdminData()?.username?.charAt(0)?.toUpperCase() || 'A' }}
+            </div>
+          </div>
+
+          <div class="profile-info">
+            <div class="info-row">
+              <label>Tên đăng nhập:</label>
+              <span class="value">{{ getAdminData()?.username }}</span>
+            </div>
+            <div class="info-row">
+              <label>Vai trò:</label>
+              <span class="value badge-admin">{{ getAdminData()?.role }}</span>
+            </div>
+          </div>
+
+          <div class="profile-actions">
+            <button class="btn btn-secondary" (click)="openChangePassword()">
+              <span class="icon">🔒</span>
+              Đổi mật khẩu
+            </button>
+          </div>
+        </div>
+
+        <div class="info-note">
+          <p><strong>Lưu ý:</strong> Tài khoản Admin chỉ có thể đổi mật khẩu. 
+          Để thay đổi thông tin khác, vui lòng liên hệ quản trị viên cấp cao.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ==================== CHANGE PASSWORD MODAL ==================== -->
+    <div class="modal-overlay" *ngIf="isChangePasswordMode" (click)="cancelChangePassword()">
+      <div class="modal-content" (click)="$event.stopPropagation()">
+        <div class="modal-header">
+          <h2 class="modal-title">
+            <i class="icon">🔒</i>
+            Đổi Mật Khẩu
+          </h2>
+          <button class="modal-close" (click)="cancelChangePassword()">×</button>
+        </div>
+        
+        <div class="modal-body">
+          <form class="password-form">
+            <div class="form-group">
+              <label class="form-label required">Mật khẩu cũ</label>
+              <input type="password" class="form-input" [class.error]="validationErrors.oldPassword"
+                [(ngModel)]="passwordData.oldPassword" name="oldPassword" placeholder="Nhập mật khẩu cũ" />
+              <small class="error-text" *ngIf="validationErrors.oldPassword">{{ validationErrors.oldPassword }}</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label required">Mật khẩu mới</label>
+              <input type="password" class="form-input" [class.error]="validationErrors.newPassword"
+                [(ngModel)]="passwordData.newPassword" name="newPassword" placeholder="Nhập mật khẩu mới (tối thiểu 6 ký tự)" />
+              <small class="error-text" *ngIf="validationErrors.newPassword">{{ validationErrors.newPassword }}</small>
+            </div>
+            <div class="form-group">
+              <label class="form-label required">Xác nhận mật khẩu mới</label>
+              <input type="password" class="form-input" [class.error]="validationErrors.confirmPassword"
+                [(ngModel)]="passwordData.confirmPassword" name="confirmPassword" placeholder="Nhập lại mật khẩu mới" />
+              <small class="error-text" *ngIf="validationErrors.confirmPassword">{{ validationErrors.confirmPassword }}</small>
+            </div>
+          </form>
+        </div>
+
+        <div class="modal-footer">
+          <button class="btn btn-secondary" (click)="cancelChangePassword()">
+            <span class="icon">✖️</span>
+            Hủy
+          </button>
+          <button class="btn btn-primary" (click)="changePassword()" [disabled]="loading">
+            <span class="icon">💾</span>
+            {{ loading ? 'Đang lưu...' : 'Đổi mật khẩu' }}
+          </button>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>

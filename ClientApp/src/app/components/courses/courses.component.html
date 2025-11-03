@@ -1,0 +1,433 @@
+<div class="courses-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-title">
+      <span class="icon">📚</span>
+      Quản Lý Môn Học
+    </h1>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="successMessage" class="alert alert-success">
+    <span class="alert-icon">✓</span>
+    <span>{{ successMessage }}</span>
+  </div>
+
+  <div *ngIf="errorMessage" class="alert alert-error">
+    <span class="alert-icon">✕</span>
+    <span>{{ errorMessage }}</span>
+  </div>
+
+  <!-- Toolbar -->
+  <div class="toolbar">
+    <div class="filters-row">
+      <!-- Search Box -->
+      <div class="search-box">
+        <input 
+          type="text" 
+          class="search-input" 
+          placeholder="Tìm theo mã môn học hoặc tên môn học..." 
+          [(ngModel)]="searchString"
+          (keyup.enter)="onSearch()"
+        />
+        <button class="btn-icon" (click)="onSearch()">
+          🔍
+        </button>
+      </div>
+
+      <!-- Department Filter -->
+      <select class="filter-select" [(ngModel)]="selectedDepartmentId" (change)="onDepartmentFilterChange()">
+        <option value="">Tất cả khoa</option>
+        <option *ngFor="let dept of departments" [value]="dept.departmentId">
+          {{ dept.departmentCode }} - {{ dept.departmentName }}
+        </option>
+      </select>
+
+      <!-- Teacher Filter -->
+      <select class="filter-select" [(ngModel)]="selectedTeacherId" (change)="onTeacherFilterChange()">
+        <option value="">Tất cả giảng viên</option>
+        <option *ngFor="let teacher of teachers" [value]="teacher.teacherId">
+          {{ teacher.fullName }}
+        </option>
+      </select>
+    </div>
+
+    <!-- Action Buttons -->
+    <div class="actions-row">
+      <button class="btn btn-primary" (click)="openAddModal()" *ngIf="canEdit()">
+        <span class="icon">➕</span>
+        Thêm Môn Học
+      </button>
+      <button class="btn btn-success" (click)="exportToExcel()" *ngIf="canExport()">
+        <span class="icon">📊</span>
+        Xuất Excel
+      </button>
+      <button class="btn btn-warning" (click)="exportToPdf()" *ngIf="canExport()">
+        <span class="icon">📄</span>
+        Xuất PDF
+      </button>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="isLoading" class="loading-container">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Data Table -->
+  <div *ngIf="!isLoading" class="table-container">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Mã Môn Học</th>
+          <th>Tên Môn Học</th>
+          <th>Số Tín Chỉ</th>
+          <th>Khoa</th>
+          <th>Giảng Viên</th>
+          <th class="text-center">Thao Tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngIf="courses.length === 0">
+          <td colspan="6" class="empty-state">
+            <div class="empty-icon">📚</div>
+            <p>Không tìm thấy môn học nào</p>
+          </td>
+        </tr>
+        <tr *ngFor="let course of courses">
+          <td>{{ course.courseId }}</td>
+          <td>{{ course.courseName }}</td>
+          <td class="text-center">
+            <span class="credits-badge">{{ course.credits }}</span>
+          </td>
+          <td>
+            <span class="department-badge">{{ course.departmentName }}</span>
+          </td>
+          <td>{{ course.teacherName || 'Chưa phân công' }}</td>
+          <td class="text-center">
+            <div class="action-buttons">
+              <button 
+                class="btn-action btn-edit" 
+                (click)="openEditModal(course)"
+                *ngIf="canEdit()"
+                title="Sửa"
+              >
+                <span class="icon">✏️</span>
+              </button>
+              <button 
+                class="btn-action btn-delete" 
+                (click)="openDeleteModal(course)"
+                *ngIf="canDelete()"
+                title="Xóa"
+              >
+                <span class="icon">🗑️</span>
+              </button>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination" *ngIf="totalPages > 1">
+      <button class="btn-page" (click)="onPageChange(1)" [disabled]="currentPage === 1">
+        ⏮️ Đầu
+      </button>
+      <button class="btn-page" (click)="onPageChange(currentPage - 1)" [disabled]="currentPage === 1">
+        ◀️ Trước
+      </button>
+      <span class="page-info">
+        Trang <strong>{{ currentPage }}</strong> / <strong>{{ totalPages }}</strong>
+        (Tổng: <strong>{{ totalCount }}</strong> môn học)
+      </span>
+      <button class="btn-page" (click)="onPageChange(currentPage + 1)" [disabled]="currentPage === totalPages">
+        Sau ▶️
+      </button>
+      <button class="btn-page" (click)="onPageChange(totalPages)" [disabled]="currentPage === totalPages">
+        Cuối ⏭️
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Add Course Modal -->
+<div class="modal-overlay" *ngIf="showAddModal" (click)="closeAddModal()">
+  <div class="modal-content modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">➕ Thêm Môn Học Mới</h2>
+      <button class="modal-close" (click)="closeAddModal()">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      <form class="form-grid-single">
+        <!-- Course ID -->
+        <div class="form-group">
+          <label class="form-label">
+            Mã Môn Học <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            class="form-input"
+            [class.error]="validationErrors.courseId"
+            [(ngModel)]="currentCourse.courseId" 
+            name="courseId"
+            placeholder="Nhập mã môn học (tối đa 10 ký tự)"
+            maxlength="10"
+            required
+          />
+          <small class="error-text" *ngIf="validationErrors.courseId">
+            {{ validationErrors.courseId }}
+          </small>
+        </div>
+
+        <!-- Course Name -->
+        <div class="form-group">
+          <label class="form-label">
+            Tên Môn Học <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            class="form-input"
+            [class.error]="validationErrors.courseName"
+            [(ngModel)]="currentCourse.courseName" 
+            name="courseName"
+            placeholder="Nhập tên môn học"
+            maxlength="100"
+            required
+          />
+          <small class="error-text" *ngIf="validationErrors.courseName">
+            {{ validationErrors.courseName }}
+          </small>
+        </div>
+
+        <!-- Credits -->
+        <div class="form-group">
+          <label class="form-label">
+            Số Tín Chỉ <span class="required">*</span>
+          </label>
+          <input 
+            type="number" 
+            class="form-input"
+            [class.error]="validationErrors.credits"
+            [(ngModel)]="currentCourse.credits" 
+            name="credits"
+            placeholder="Nhập số tín chỉ (1-10)"
+            min="1"
+            max="10"
+            required
+          />
+          <small class="error-text" *ngIf="validationErrors.credits">
+            {{ validationErrors.credits }}
+          </small>
+        </div>
+
+        <!-- Department -->
+        <div class="form-group">
+          <label class="form-label">
+            Khoa <span class="required">*</span>
+          </label>
+          <select 
+            class="form-input"
+            [class.error]="validationErrors.departmentId"
+            [(ngModel)]="currentCourse.departmentId"
+            (change)="onDepartmentChange()"
+            name="departmentId"
+            required
+          >
+            <option value="">-- Chọn khoa --</option>
+            <option *ngFor="let dept of departments" [value]="dept.departmentId">
+              {{ dept.departmentCode }} - {{ dept.departmentName }}
+            </option>
+          </select>
+          <small class="error-text" *ngIf="validationErrors.departmentId">
+            {{ validationErrors.departmentId }}
+          </small>
+        </div>
+
+        <!-- Teacher (cascading from Department) -->
+        <div class="form-group">
+          <label class="form-label">
+            Giảng Viên
+          </label>
+          <select 
+            class="form-input"
+            [(ngModel)]="currentCourse.teacherId"
+            name="teacherId"
+            [disabled]="!currentCourse.departmentId"
+          >
+            <option value="">-- Chọn giảng viên --</option>
+            <option *ngFor="let teacher of filteredTeachers" [value]="teacher.teacherId">
+              {{ teacher.teacherId }} - {{ teacher.fullName }}
+            </option>
+          </select>
+          <small class="error-text" *ngIf="!currentCourse.departmentId">
+            Vui lòng chọn khoa trước
+          </small>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeAddModal()">
+        Hủy
+      </button>
+      <button class="btn btn-primary" (click)="saveCourse()">
+        <span class="icon">💾</span>
+        Lưu
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Edit Course Modal -->
+<div class="modal-overlay" *ngIf="showEditModal" (click)="closeEditModal()">
+  <div class="modal-content modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">✏️ Sửa Môn Học</h2>
+      <button class="modal-close" (click)="closeEditModal()">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      <form class="form-grid-single">
+        <!-- Course ID (disabled) -->
+        <div class="form-group">
+          <label class="form-label">
+            Mã Môn Học
+          </label>
+          <input 
+            type="text" 
+            class="form-input"
+            [(ngModel)]="currentCourse.courseId" 
+            name="courseId"
+            disabled
+          />
+        </div>
+
+        <!-- Course Name -->
+        <div class="form-group">
+          <label class="form-label">
+            Tên Môn Học <span class="required">*</span>
+          </label>
+          <input 
+            type="text" 
+            class="form-input"
+            [class.error]="validationErrors.courseName"
+            [(ngModel)]="currentCourse.courseName" 
+            name="courseName"
+            placeholder="Nhập tên môn học"
+            maxlength="100"
+            required
+          />
+          <small class="error-text" *ngIf="validationErrors.courseName">
+            {{ validationErrors.courseName }}
+          </small>
+        </div>
+
+        <!-- Credits -->
+        <div class="form-group">
+          <label class="form-label">
+            Số Tín Chỉ <span class="required">*</span>
+          </label>
+          <input 
+            type="number" 
+            class="form-input"
+            [class.error]="validationErrors.credits"
+            [(ngModel)]="currentCourse.credits" 
+            name="credits"
+            placeholder="Nhập số tín chỉ (1-10)"
+            min="1"
+            max="10"
+            required
+          />
+          <small class="error-text" *ngIf="validationErrors.credits">
+            {{ validationErrors.credits }}
+          </small>
+        </div>
+
+        <!-- Department -->
+        <div class="form-group">
+          <label class="form-label">
+            Khoa <span class="required">*</span>
+          </label>
+          <select 
+            class="form-input"
+            [class.error]="validationErrors.departmentId"
+            [(ngModel)]="currentCourse.departmentId"
+            (change)="onDepartmentChange()"
+            name="departmentId"
+            required
+          >
+            <option value="">-- Chọn khoa --</option>
+            <option *ngFor="let dept of departments" [value]="dept.departmentId">
+              {{ dept.departmentCode }} - {{ dept.departmentName }}
+            </option>
+          </select>
+          <small class="error-text" *ngIf="validationErrors.departmentId">
+            {{ validationErrors.departmentId }}
+          </small>
+        </div>
+
+        <!-- Teacher (cascading from Department) -->
+        <div class="form-group">
+          <label class="form-label">
+            Giảng Viên
+          </label>
+          <select 
+            class="form-input"
+            [(ngModel)]="currentCourse.teacherId"
+            name="teacherId"
+            [disabled]="!currentCourse.departmentId"
+          >
+            <option value="">-- Chọn giảng viên --</option>
+            <option *ngFor="let teacher of filteredTeachers" [value]="teacher.teacherId">
+              {{ teacher.teacherId }} - {{ teacher.fullName }}
+            </option>
+          </select>
+          <small class="error-text" *ngIf="!currentCourse.departmentId">
+            Vui lòng chọn khoa trước
+          </small>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeEditModal()">
+        Hủy
+      </button>
+      <button class="btn btn-primary" (click)="saveCourse()">
+        <span class="icon">💾</span>
+        Cập Nhật
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showDeleteModal" (click)="closeDeleteModal()">
+  <div class="modal-content modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">⚠️ Xác Nhận Xóa</h2>
+      <button class="modal-close" (click)="closeDeleteModal()">✕</button>
+    </div>
+    
+    <div class="modal-body">
+      <div class="confirm-message">
+        <div class="confirm-icon">🗑️</div>
+        <p>Bạn có chắc chắn muốn xóa môn học:</p>
+        <p><strong>{{ courseToDelete?.courseId }} - {{ courseToDelete?.courseName }}</strong></p>
+        <p class="text-warning">⚠️ Hành động này không thể hoàn tác!</p>
+      </div>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeDeleteModal()">
+        Hủy
+      </button>
+      <button class="btn btn-danger" (click)="deleteCourse()">
+        <span class="icon">🗑️</span>
+        Xóa
+      </button>
+    </div>
+  </div>
+</div>

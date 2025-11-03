@@ -1,0 +1,485 @@
+@model StudentManagementSystem.Models.ViewModels.DashboardViewModel
+
+@{
+    ViewData["Title"] = "Dashboard";
+}
+
+<div class="container-fluid mt-4">
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="welcome-header">
+                <h1 class="display-4 fw-bold text-gradient">
+                    <i class="fas fa-hand-wave me-2"></i>
+                    Chào mừng, @Model.UserName!
+                </h1>
+                <p class="lead">
+                    <span class="badge bg-gradient-primary fs-6">
+                        <i class="fas fa-user-tag me-2"></i>@Model.UserRole
+                    </span>
+                </p>
+            </div>
+        </div>
+    </div>
+
+    @if (Model.UserRole == "Admin")
+ {
+        <!-- Admin Dashboard -->
+        <div class="row g-3 g-md-4 mb-4">
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+                <div class="card stats-card bg-primary text-white h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon mb-2">
+                            <i class="fas fa-user-graduate fa-3x"></i>
+                        </div>
+                        <h6 class="card-title text-uppercase mb-2 small">Sinh Viên</h6>
+                        <h2 class="display-4 fw-bold mb-2">@Model.TotalStudents</h2>
+                        <a asp-controller="Students" asp-action="Index" class="btn btn-light btn-sm w-100">
+                            <span class="d-none d-sm-inline">Xem chi tiết</span>
+                            <span class="d-inline d-sm-none">Xem</span>
+                            <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+                <div class="card stats-card bg-success text-white h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon mb-2">
+                            <i class="fas fa-chalkboard-teacher fa-3x"></i>
+                        </div>
+                        <h6 class="card-title text-uppercase mb-2 small">Giáo Viên</h6>
+                        <h2 class="display-4 fw-bold mb-2">@Model.TotalTeachers</h2>
+                        <a asp-controller="Teachers" asp-action="Index" class="btn btn-light btn-sm w-100">
+                            <span class="d-none d-sm-inline">Xem chi tiết</span>
+                            <span class="d-inline d-sm-none">Xem</span>
+                            <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+                <div class="card stats-card bg-info text-white h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon mb-2">
+                            <i class="fas fa-users fa-3x"></i>
+                        </div>
+                        <h6 class="card-title text-uppercase mb-2 small">Lớp Học</h6>
+                        <h2 class="display-4 fw-bold mb-2">@Model.TotalClasses</h2>
+                        <a asp-controller="Classes" asp-action="Index" class="btn btn-light btn-sm w-100">
+                            <span class="d-none d-sm-inline">Xem chi tiết</span>
+                            <span class="d-inline d-sm-none">Xem</span>
+                            <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+                <div class="card stats-card bg-warning text-white h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon mb-2">
+                            <i class="fas fa-book fa-3x"></i>
+                        </div>
+                        <h6 class="card-title text-uppercase mb-2 small">Môn Học</h6>
+                        <h2 class="display-4 fw-bold mb-2">@Model.TotalCourses</h2>
+                        <a asp-controller="Courses" asp-action="Index" class="btn btn-light btn-sm w-100">
+                            <span class="d-none d-sm-inline">Xem chi tiết</span>
+                            <span class="d-inline d-sm-none">Xem</span>
+                            <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="col-xl-2 col-lg-3 col-md-4 col-sm-6 col-12">
+                <div class="card stats-card bg-danger text-white h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon mb-2">
+                            <i class="fas fa-building fa-3x"></i>
+                        </div>
+                        <h6 class="card-title text-uppercase mb-2 small">Khoa</h6>
+                        <h2 class="display-4 fw-bold mb-2">@Model.TotalDepartments</h2>
+                        <a asp-controller="Departments" asp-action="Index" class="btn btn-light btn-sm w-100">
+                            <span class="d-none d-sm-inline">Xem chi tiết</span>
+                            <span class="d-inline d-sm-none">Xem</span>
+                            <i class="fas fa-arrow-right ms-1"></i>
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row mt-3 mt-md-4">
+            <div class="col-12">
+                <div class="card shadow-lg">
+                    <div class="card-header">
+                        <h4 class="mb-0 h5">
+                            <i class="fas fa-cogs me-2"></i>Các Chức Năng Quản Lý
+                        </h4>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-2 g-md-3">
+                            <div class="col-lg-2 col-md-4 col-sm-6 col-6">
+                                <a asp-controller="Students" asp-action="Index" class="btn btn-outline-primary btn-lg w-100 d-flex flex-column align-items-center justify-content-center py-3 py-md-4">
+                                    <i class="fas fa-user-graduate fa-2x mb-2 mb-md-3"></i>
+                                    <span class="text-center small">Quản Lý<br/>Sinh Viên</span>
+                                </a>
+                            </div>
+                            <div class="col-lg-2 col-md-4 col-sm-6 col-6">
+                                <a asp-controller="Teachers" asp-action="Index" class="btn btn-outline-success btn-lg w-100 d-flex flex-column align-items-center justify-content-center py-3 py-md-4">
+                                    <i class="fas fa-chalkboard-teacher fa-2x mb-2 mb-md-3"></i>
+                                    <span class="text-center small">Quản Lý<br/>Giáo Viên</span>
+                                </a>
+                            </div>
+                            <div class="col-lg-2 col-md-4 col-sm-6 col-6">
+                                <a asp-controller="Classes" asp-action="Index" class="btn btn-outline-info btn-lg w-100 d-flex flex-column align-items-center justify-content-center py-3 py-md-4">
+                                    <i class="fas fa-users fa-2x mb-2 mb-md-3"></i>
+                                    <span class="text-center small">Quản Lý<br/>Lớp Học</span>
+                                </a>
+                            </div>
+                            <div class="col-lg-2 col-md-4 col-sm-6 col-6">
+                                <a asp-controller="Courses" asp-action="Index" class="btn btn-outline-warning btn-lg w-100 d-flex flex-column align-items-center justify-content-center py-3 py-md-4">
+                                    <i class="fas fa-book fa-2x mb-2 mb-md-3"></i>
+                                    <span class="text-center small">Quản Lý<br/>Môn Học</span>
+                                </a>
+                            </div>
+                            <div class="col-lg-2 col-md-4 col-sm-6 col-6">
+                                <a asp-controller="Departments" asp-action="Index" class="btn btn-outline-danger btn-lg w-100 d-flex flex-column align-items-center justify-content-center py-3 py-md-4">
+                                    <i class="fas fa-building fa-2x mb-2 mb-md-3"></i>
+                                    <span class="text-center small">Quản Lý<br/>Khoa</span>
+                                </a>
+                            </div>
+                            <div class="col-lg-2 col-md-4 col-sm-6 col-6">
+                                <a asp-controller="Grades" asp-action="Index" class="btn btn-outline-secondary btn-lg w-100 d-flex flex-column align-items-center justify-content-center py-3 py-md-4">
+                                    <i class="fas fa-chart-line fa-2x mb-2 mb-md-3"></i>
+                                    <span class="text-center small">Quản Lý<br/>Điểm</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (Model.UserRole == "Teacher")
+    {
+        <!-- Teacher Dashboard -->
+        <div class="row g-4 mb-4">
+            <!-- Stats Cards -->
+            <div class="col-xl-4 col-md-6">
+                <div class="card stats-card bg-gradient-success text-white h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon mb-3">
+                            <i class="fas fa-users fa-3x"></i>
+                        </div>
+                        <h6 class="card-title text-uppercase mb-2">Lớp Chủ Nhiệm</h6>
+                        <h2 class="display-4 fw-bold mb-3">@(Model.TeacherClasses?.Count ?? 0)</h2>
+                        <p class="mb-0 opacity-75">Đang quản lý</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-md-6">
+                <div class="card stats-card bg-gradient-info text-white h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon mb-3">
+                            <i class="fas fa-book-open fa-3x"></i>
+                        </div>
+                        <h6 class="card-title text-uppercase mb-2">Môn Giảng Dạy</h6>
+                        <h2 class="display-4 fw-bold mb-3">@(Model.TeacherCourses?.Count ?? 0)</h2>
+                        <p class="mb-0 opacity-75">Môn học phụ trách</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-4 col-md-6">
+                <div class="card stats-card bg-gradient-warning text-white h-100">
+                    <div class="card-body text-center">
+                        <div class="stats-icon mb-3">
+                            <i class="fas fa-user-graduate fa-3x"></i>
+                        </div>
+                        <h6 class="card-title text-uppercase mb-2">Tổng Sinh Viên</h6>
+                        <h2 class="display-4 fw-bold mb-3">@Model.TotalStudents</h2>
+                        <p class="mb-0 opacity-75">Sinh viên theo dõi</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row g-4 mb-4">
+            <!-- Classes List -->
+            <div class="col-lg-6">
+                <div class="card shadow-lg h-100">
+                    <div class="card-header bg-gradient-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-chalkboard me-2"></i>Lớp Chủ Nhiệm
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.TeacherClasses != null && Model.TeacherClasses.Any())
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var c in Model.TeacherClasses)
+                                {
+                                    <a asp-controller="Students" asp-action="Index" asp-route-classId="@c.ClassId" 
+                                       class="list-group-item list-group-item-action border-0 py-3">
+                                        <div class="d-flex w-100 justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 fw-bold">
+                                                    <i class="fas fa-users text-success me-2"></i>@c.ClassName
+                                                </h6>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-building me-1"></i>@c.Department?.DepartmentName
+                                                </small>
+                                            </div>
+                                            <span class="badge bg-success rounded-pill">
+                                                <i class="fas fa-arrow-right"></i>
+                                            </span>
+                                        </div>
+                                    </a>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Chưa có lớp chủ nhiệm</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Courses List -->
+            <div class="col-lg-6">
+                <div class="card shadow-lg h-100">
+                    <div class="card-header bg-gradient-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-book-open me-2"></i>Môn Học Giảng Dạy
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.TeacherCourses != null && Model.TeacherCourses.Any())
+                        {
+                            <div class="list-group list-group-flush">
+                                @foreach (var course in Model.TeacherCourses)
+                                {
+                                    <div class="list-group-item border-0 py-3">
+                                        <div class="d-flex w-100 justify-content-between align-items-center">
+                                            <div>
+                                                <h6 class="mb-1 fw-bold">
+                                                    <i class="fas fa-book text-info me-2"></i>@course.CourseName
+                                                </h6>
+                                                <small class="text-muted">
+                                                    <i class="fas fa-building me-1"></i>@course.Department?.DepartmentName
+                                                </small>
+                                            </div>
+                                            <span class="badge bg-primary rounded-pill fs-6">
+                                                @course.Credits TC
+                                            </span>
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Chưa có môn học giảng dạy</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Quick Actions -->
+        <div class="row">
+            <div class="col-12">
+                <div class="card shadow-lg">
+                    <div class="card-header bg-gradient-warning text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bolt me-2"></i>Các Chức Năng Nhanh
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row g-3">
+                            <div class="col-lg-4 col-md-6">
+                                <a asp-controller="Students" asp-action="Index" class="btn btn-outline-primary btn-lg w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                                    <i class="fas fa-user-graduate fa-2x mb-3"></i>
+                                    <span>Danh Sách<br/>Sinh Viên</span>
+                                </a>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <a asp-controller="Grades" asp-action="Index" class="btn btn-outline-success btn-lg w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                                    <i class="fas fa-chart-line fa-2x mb-3"></i>
+                                    <span>Quản Lý<br/>Điểm Số</span>
+                                </a>
+                            </div>
+                            <div class="col-lg-4 col-md-6">
+                                <a asp-controller="Courses" asp-action="Index" class="btn btn-outline-info btn-lg w-100 h-100 d-flex flex-column align-items-center justify-content-center py-4">
+                                    <i class="fas fa-book fa-2x mb-3"></i>
+                                    <span>Môn Học<br/>Của Tôi</span>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+    else if (Model.UserRole == "Student")
+    {
+        <!-- Student Dashboard -->
+        <div class="row g-4 mb-4">
+            <!-- Class Info Card -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card stats-card shadow-lg h-100">
+                    <div class="card-header bg-gradient-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-school me-2"></i>Thông Tin Lớp
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        @if (Model.StudentClass != null)
+                        {
+                            <div class="text-center mb-3">
+                                <div class="mb-3">
+                                    <i class="fas fa-users fa-4x text-primary opacity-75"></i>
+                                </div>
+                                <h4 class="fw-bold text-gradient mb-3">@Model.StudentClass.ClassName</h4>
+                            </div>
+                            <div class="info-list">
+                                <div class="d-flex align-items-center mb-3 p-2 bg-light rounded">
+                                    <i class="fas fa-building text-primary me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">Khoa</small>
+                                        <strong>@Model.StudentClass.Department?.DepartmentName</strong>
+                                    </div>
+                                </div>
+                                <div class="d-flex align-items-center p-2 bg-light rounded">
+                                    <i class="fas fa-chalkboard-teacher text-success me-3 fs-5"></i>
+                                    <div>
+                                        <small class="text-muted d-block">GVCN</small>
+                                        <strong>@Model.StudentClass.Teacher?.FullName</strong>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+                        else
+                        {
+                            <div class="text-center py-5">
+                                <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                                <p class="text-muted">Chưa có thông tin lớp</p>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- GPA Card -->
+            <div class="col-lg-4 col-md-6">
+                <div class="card stats-card bg-gradient-success text-white shadow-lg h-100">
+                    <div class="card-body text-center d-flex flex-column justify-content-center">
+                        <div class="stats-icon mb-3">
+                            <i class="fas fa-chart-line fa-3x"></i>
+                        </div>
+                        <h6 class="card-title text-uppercase mb-2 opacity-75">Điểm Trung Bình</h6>
+                        <h1 class="display-1 fw-bold mb-3">
+                            @(Model.AverageScore?.ToString("F2") ?? "N/A")
+                        </h1>
+                        <p class="mb-0 fs-5 opacity-75">
+                            <i class="fas fa-book-open me-2"></i>
+                            Tổng môn: @(Model.StudentGrades?.Count ?? 0)
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions Card -->
+            <div class="col-lg-4 col-md-12">
+                <div class="card shadow-lg h-100">
+                    <div class="card-header bg-gradient-info text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-bolt me-2"></i>Chức Năng Nhanh
+                        </h5>
+                    </div>
+                    <div class="card-body d-flex flex-column justify-content-center">
+                        <a asp-controller="Grades" asp-action="MyGrades" class="btn btn-primary btn-lg w-100 mb-3 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-star me-2"></i>Xem Điểm Của Tôi
+                        </a>
+                        <a asp-controller="Students" asp-action="Details" asp-route-id="@Model.EntityId" class="btn btn-success btn-lg w-100 mb-3 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-user me-2"></i>Thông Tin Cá Nhân
+                        </a>
+                        <a asp-controller="Courses" asp-action="Index" class="btn btn-info btn-lg w-100 d-flex align-items-center justify-content-center">
+                            <i class="fas fa-book me-2"></i>Danh Sách Môn Học
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Recent Grades Table -->
+        @if (Model.StudentGrades != null && Model.StudentGrades.Any())
+        {
+            <div class="row">
+                <div class="col-12">
+                    <div class="card shadow-lg">
+                        <div class="card-header bg-gradient-warning text-white">
+                            <h5 class="mb-0">
+                                <i class="fas fa-trophy me-2"></i>Điểm Gần Đây
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover align-middle">
+                                    <thead class="table-light">
+                                        <tr>
+                                            <th><i class="fas fa-book me-2"></i>Môn Học</th>
+                                            <th class="text-center"><i class="fas fa-credit-card me-2"></i>Số Tín Chỉ</th>
+                                            <th class="text-center"><i class="fas fa-star me-2"></i>Điểm</th>
+                                            <th class="text-center"><i class="fas fa-award me-2"></i>Xếp Loại</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        @foreach (var grade in Model.StudentGrades.Take(10))
+                                        {
+                                            <tr>
+                                                <td>
+                                                    <strong>@grade.Course?.CourseName</strong>
+                                                </td>
+                                                <td class="text-center">
+                                                    <span class="badge bg-secondary">@grade.Course?.Credits TC</span>
+                                                </td>
+                                                <td class="text-center">
+                                                    <h5 class="mb-0 fw-bold text-primary">@grade.Score</h5>
+                                                </td>
+                                                <td class="text-center">
+                                                    @{
+                                                        var badgeClass = grade.Score >= 8 ? "bg-success" : 
+                                                                       grade.Score >= 6.5m ? "bg-info" : 
+                                                                       grade.Score >= 5 ? "bg-warning" : "bg-danger";
+                                                    }
+                                                    <span class="badge @badgeClass fs-6">@grade.Classification</span>
+                                                </td>
+                                            </tr>
+                                        }
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="text-center mt-4">
+                                <a asp-controller="Grades" asp-action="MyGrades" class="btn btn-primary btn-lg px-5">
+                                    <i class="fas fa-list me-2"></i>Xem Tất Cả Điểm
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        }
+    }
+</div>

@@ -1,0 +1,189 @@
+<div class="attendance-list-container">
+  <!-- Page Header -->
+  <div class="page-header">
+    <h1 class="page-title">
+      <span class="icon">📋</span>
+      Quản Lý Điểm Danh
+    </h1>
+    <button class="btn btn-primary" (click)="openCreateModal()">
+      <span>➕</span> Tạo Buổi Điểm Danh
+    </button>
+  </div>
+
+  <!-- Alert Messages -->
+  <div *ngIf="success" class="alert alert-success">
+    <span class="alert-icon">✓</span>
+    <span>{{ success }}</span>
+  </div>
+
+  <div *ngIf="error" class="alert alert-error">
+    <span class="alert-icon">✕</span>
+    <span>{{ error }}</span>
+  </div>
+
+  <!-- Filters -->
+  <div class="filters-card">
+    <div class="filter-group">
+      <label>Môn học:</label>
+      <select [(ngModel)]="selectedCourseId" (change)="onCourseFilterChange()" class="filter-select">
+        <option value="">Tất cả môn học</option>
+        <option *ngFor="let course of courses" [value]="course.courseId">
+          {{ course.courseName }}
+        </option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Trạng thái:</label>
+      <select [(ngModel)]="statusFilter" class="filter-select">
+        <option value="all">Tất cả</option>
+        <option value="Scheduled">Đã lên lịch</option>
+        <option value="Completed">Đã hoàn thành</option>
+        <option value="Cancelled">Đã hủy</option>
+      </select>
+    </div>
+
+    <div class="filter-group">
+      <label>Tìm kiếm:</label>
+      <input type="text" [(ngModel)]="searchTerm" placeholder="Tìm theo tiêu đề, môn học..." class="filter-input" />
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div *ngIf="loading && sessions.length === 0" class="loading-container">
+    <div class="spinner"></div>
+    <p>Đang tải...</p>
+  </div>
+
+  <!-- Sessions List -->
+  <div *ngIf="!loading || sessions.length > 0" class="sessions-grid">
+    <div *ngFor="let session of filteredSessions" class="session-card">
+      <div class="session-header">
+        <h3>{{ session.sessionTitle }}</h3>
+        <span class="status-badge" [ngClass]="getStatusClass(session.status || '')">
+          {{ getStatusLabel(session.status || '') }}
+        </span>
+      </div>
+
+      <div class="session-info">
+        <div class="info-row">
+          <span class="icon">📚</span>
+          <span>{{ session.courseName }}</span>
+        </div>
+        <div class="info-row">
+          <span class="icon">📅</span>
+          <span>{{ formatDate(session.sessionDate) }}</span>
+        </div>
+        <div class="info-row">
+          <span class="icon">🕐</span>
+          <span>{{ formatTime(session.sessionTime) }}</span>
+        </div>
+        <div class="info-row" *ngIf="session.location">
+          <span class="icon">📍</span>
+          <span>{{ session.location }}</span>
+        </div>
+        <div class="info-row">
+          <span class="icon">👥</span>
+          <span>{{ session.totalStudents || 0 }} sinh viên</span>
+        </div>
+        <div class="info-row" *ngIf="session.status === 'Completed'">
+          <span class="icon">✓</span>
+          <span>{{ session.presentCount || 0 }} có mặt, {{ session.absentCount || 0 }} vắng</span>
+        </div>
+        <div class="info-row" *ngIf="session.attendanceRate !== undefined">
+          <span class="icon">📊</span>
+          <span [style.color]="getAttendanceRateColor(session.attendanceRate)">
+            Tỷ lệ: {{ session.attendanceRate }}%
+          </span>
+        </div>
+      </div>
+
+      <div class="session-actions">
+        <button class="btn btn-primary btn-sm" (click)="viewSession(session.sessionId!)">
+          {{ session.status === 'Completed' ? 'Xem' : 'Điểm danh' }}
+        </button>
+        <button class="btn btn-danger btn-sm" (click)="deleteSession(session)" *ngIf="session.status !== 'Completed'">
+          Xóa
+        </button>
+      </div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="filteredSessions.length === 0" class="empty-state">
+      <p>Không tìm thấy buổi điểm danh nào</p>
+    </div>
+  </div>
+
+  <!-- Create Session Modal -->
+  <div class="modal-overlay" *ngIf="showCreateModal" (click)="closeCreateModal()">
+    <div class="modal-content" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Tạo Buổi Điểm Danh Mới</h2>
+        <button class="modal-close" (click)="closeCreateModal()">×</button>
+      </div>
+
+      <div class="modal-body">
+        <form class="session-form">
+          <div class="form-group">
+            <label>Môn học <span class="required">*</span></label>
+            <select [(ngModel)]="newSession.courseId" name="courseId" class="form-input" [class.error]="validationErrors.courseId">
+              <option value="">Chọn môn học</option>
+              <option *ngFor="let course of courses" [value]="course.courseId">
+                {{ course.courseName }}
+              </option>
+            </select>
+            <small class="error-text" *ngIf="validationErrors.courseId">{{ validationErrors.courseId }}</small>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Ngày học <span class="required">*</span></label>
+              <input type="date" [(ngModel)]="newSession.sessionDate" name="sessionDate" class="form-input" [class.error]="validationErrors.sessionDate" />
+              <small class="error-text" *ngIf="validationErrors.sessionDate">{{ validationErrors.sessionDate }}</small>
+            </div>
+
+            <div class="form-group">
+              <label>Giờ học <span class="required">*</span></label>
+              <input type="time" [(ngModel)]="newSession.sessionTime" name="sessionTime" class="form-input" [class.error]="validationErrors.sessionTime" />
+              <small class="error-text" *ngIf="validationErrors.sessionTime">{{ validationErrors.sessionTime }}</small>
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Tiêu đề buổi học <span class="required">*</span></label>
+            <input type="text" [(ngModel)]="newSession.sessionTitle" name="sessionTitle" class="form-input" [class.error]="validationErrors.sessionTitle" placeholder="VD: Buổi 1: Giới thiệu môn học" />
+            <small class="error-text" *ngIf="validationErrors.sessionTitle">{{ validationErrors.sessionTitle }}</small>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Loại buổi học</label>
+              <select [(ngModel)]="newSession.sessionType" name="sessionType" class="form-input">
+                <option value="Lý thuyết">Lý thuyết</option>
+                <option value="Thực hành">Thực hành</option>
+                <option value="Kiểm tra">Kiểm tra</option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Thời lượng (phút)</label>
+              <input type="number" [(ngModel)]="newSession.duration" name="duration" class="form-input" min="30" max="180" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Phòng học</label>
+            <input type="text" [(ngModel)]="newSession.location" name="location" class="form-input" placeholder="VD: A101" />
+          </div>
+        </form>
+      </div>
+
+      <div class="modal-footer">
+        <button class="btn btn-secondary" (click)="closeCreateModal()">Hủy</button>
+        <button class="btn btn-primary" (click)="createSession()" [disabled]="loading">
+          {{ loading ? 'Đang tạo...' : 'Tạo buổi điểm danh' }}
+        </button>
+      </div>
+    </div>
+  </div>
+</div>

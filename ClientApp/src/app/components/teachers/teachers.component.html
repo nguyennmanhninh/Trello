@@ -1,0 +1,384 @@
+<div class="teachers-container">
+  <!-- Header Section -->
+  <div class="page-header">
+    <div class="header-content">
+      <div class="title-section">
+        <h1 class="page-title">
+          <i class="icon">👨‍🏫</i>
+          Quản Lý Giáo Viên
+        </h1>
+        <p class="page-subtitle">Tổng số: <strong>{{ totalCount }}</strong> giáo viên</p>
+      </div>
+      <div class="action-buttons" *ngIf="canEdit()">
+        <button class="btn btn-primary" (click)="openAddModal()">
+          <i class="icon">➕</i>
+          Thêm Giáo Viên
+        </button>
+        <button class="btn btn-success" (click)="exportToExcel()" *ngIf="canExport()">
+          <i class="icon">📊</i>
+          Xuất Excel
+        </button>
+        <button class="btn btn-info" (click)="exportToPdf()" *ngIf="canExport()">
+          <i class="icon">📄</i>
+          Xuất PDF
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Search Section -->
+  <div class="search-section">
+    <div class="search-box">
+      <input 
+        type="text" 
+        class="search-input"
+        [(ngModel)]="searchString"
+        (keyup.enter)="onSearch()"
+        placeholder="🔍 Tìm kiếm theo tên, username, số điện thoại..."
+      />
+      <button class="btn btn-search" (click)="onSearch()">
+        Tìm kiếm
+      </button>
+    </div>
+  </div>
+
+  <!-- Alert Section -->
+  <div class="alert-container" *ngIf="showAlert">
+    <div class="alert" [ngClass]="'alert-' + alertType">
+      <span class="alert-icon">{{ alertType === 'success' ? '✅' : '❌' }}</span>
+      <span class="alert-message">{{ alertMessage }}</span>
+      <button class="alert-close" (click)="showAlert = false">×</button>
+    </div>
+  </div>
+
+  <!-- Loading Spinner -->
+  <div class="loading-spinner" *ngIf="isLoading && !isModalOpen">
+    <div class="spinner"></div>
+    <p>Đang tải dữ liệu...</p>
+  </div>
+
+  <!-- Teachers Table -->
+  <div class="table-container" *ngIf="!isLoading">
+    <table class="data-table">
+      <thead>
+        <tr>
+          <th>Mã GV</th>
+          <th>Họ và Tên</th>
+          <th>Ngày Sinh</th>
+          <th>Giới Tính</th>
+          <th>Số Điện Thoại</th>
+          <th>Địa Chỉ</th>
+          <th>Khoa</th>
+          <th>Username</th>
+          <th *ngIf="canEdit() || canDelete()">Thao Tác</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr *ngFor="let teacher of teachers" class="table-row">
+          <td class="teacher-id">{{ teacher.teacherId }}</td>
+          <td class="teacher-name">{{ teacher.fullName }}</td>
+          <td>{{ formatDateForDisplay(teacher.dateOfBirth) }}</td>
+          <td>
+            <span class="gender-badge" [ngClass]="teacher.gender ? 'male' : 'female'">
+              {{ teacher.gender ? 'Nam' : 'Nữ' }}
+            </span>
+          </td>
+          <td>{{ teacher.phone }}</td>
+          <td class="address">{{ teacher.address }}</td>
+          <td>
+            <span class="department-badge">{{ teacher.departmentName }}</span>
+          </td>
+          <td>{{ teacher.username }}</td>
+          <td class="actions" *ngIf="canEdit() || canDelete()">
+            <button 
+              class="btn-icon btn-edit" 
+              (click)="openEditModal(teacher)"
+              *ngIf="canEdit()"
+              title="Sửa"
+            >
+              ✏️
+            </button>
+            <button 
+              class="btn-icon btn-delete" 
+              (click)="confirmDelete(teacher.teacherId)"
+              *ngIf="canDelete()"
+              title="Xóa"
+            >
+              🗑️
+            </button>
+          </td>
+        </tr>
+        <tr *ngIf="teachers.length === 0">
+          <td [attr.colspan]="canEdit() || canDelete() ? 9 : 8" class="no-data">
+            <div class="empty-state">
+              <i class="empty-icon">📭</i>
+              <p>Không có dữ liệu giáo viên</p>
+            </div>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- Pagination -->
+  <div class="pagination" *ngIf="totalPages > 1">
+    <button 
+      class="pagination-btn" 
+      [disabled]="currentPage === 1"
+      (click)="onPageChange(1)"
+    >
+      ⏮️ Đầu
+    </button>
+    <button 
+      class="pagination-btn" 
+      [disabled]="currentPage === 1"
+      (click)="onPageChange(currentPage - 1)"
+    >
+      ◀️ Trước
+    </button>
+    
+    <span class="pagination-info">
+      Trang <strong>{{ currentPage }}</strong> / <strong>{{ totalPages }}</strong>
+    </span>
+    
+    <button 
+      class="pagination-btn" 
+      [disabled]="currentPage === totalPages"
+      (click)="onPageChange(currentPage + 1)"
+    >
+      Sau ▶️
+    </button>
+    <button 
+      class="pagination-btn" 
+      [disabled]="currentPage === totalPages"
+      (click)="onPageChange(totalPages)"
+    >
+      Cuối ⏭️
+    </button>
+  </div>
+</div>
+
+<!-- Add/Edit Modal -->
+<div class="modal-overlay" *ngIf="isModalOpen" (click)="closeModal()">
+  <div class="modal-content" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">
+        <i class="icon">{{ isEditMode ? '✏️' : '➕' }}</i>
+        {{ isEditMode ? 'Sửa Giáo Viên' : 'Thêm Giáo Viên' }}
+      </h2>
+      <button class="modal-close" (click)="closeModal()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <form class="teacher-form">
+        <div class="form-grid">
+          <!-- Teacher ID -->
+          <div class="form-group">
+            <label class="form-label required">Mã Giáo Viên</label>
+            <input 
+              type="text" 
+              class="form-input"
+              [class.error]="validationErrors.teacherId"
+              [(ngModel)]="currentTeacher.teacherId"
+              name="teacherId"
+              [disabled]="isEditMode"
+              maxlength="10"
+              placeholder="Nhập mã giáo viên"
+            />
+            <small class="error-text" *ngIf="validationErrors.teacherId">
+              {{ validationErrors.teacherId }}
+            </small>
+          </div>
+
+          <!-- Full Name -->
+          <div class="form-group">
+            <label class="form-label required">Họ và Tên</label>
+            <input 
+              type="text" 
+              class="form-input"
+              [class.error]="validationErrors.fullName"
+              [(ngModel)]="currentTeacher.fullName"
+              name="fullName"
+              maxlength="100"
+              placeholder="Nhập họ và tên"
+            />
+            <small class="error-text" *ngIf="validationErrors.fullName">
+              {{ validationErrors.fullName }}
+            </small>
+          </div>
+
+          <!-- Date of Birth -->
+          <div class="form-group">
+            <label class="form-label required">Ngày Sinh</label>
+            <input 
+              type="date" 
+              class="form-input"
+              [class.error]="validationErrors.dateOfBirth"
+              [(ngModel)]="currentTeacher.dateOfBirth"
+              name="dateOfBirth"
+            />
+            <small class="error-text" *ngIf="validationErrors.dateOfBirth">
+              {{ validationErrors.dateOfBirth }}
+            </small>
+          </div>
+
+          <!-- Gender -->
+          <div class="form-group">
+            <label class="form-label required">Giới Tính</label>
+            <div class="gender-toggle">
+              <button 
+                type="button"
+                class="gender-btn"
+                [class.active]="currentTeacher.gender === true"
+                (click)="currentTeacher.gender = true"
+              >
+                👨 Nam
+              </button>
+              <button 
+                type="button"
+                class="gender-btn"
+                [class.active]="currentTeacher.gender === false"
+                (click)="currentTeacher.gender = false"
+              >
+                👩 Nữ
+              </button>
+            </div>
+          </div>
+
+          <!-- Phone -->
+          <div class="form-group">
+            <label class="form-label required">Số Điện Thoại</label>
+            <input 
+              type="tel" 
+              class="form-input"
+              [class.error]="validationErrors.phone"
+              [(ngModel)]="currentTeacher.phone"
+              name="phone"
+              maxlength="15"
+              placeholder="Nhập số điện thoại"
+            />
+            <small class="error-text" *ngIf="validationErrors.phone">
+              {{ validationErrors.phone }}
+            </small>
+          </div>
+
+          <!-- Address -->
+          <div class="form-group">
+            <label class="form-label required">Địa Chỉ</label>
+            <input 
+              type="text" 
+              class="form-input"
+              [class.error]="validationErrors.address"
+              [(ngModel)]="currentTeacher.address"
+              name="address"
+              maxlength="200"
+              placeholder="Nhập địa chỉ"
+            />
+            <small class="error-text" *ngIf="validationErrors.address">
+              {{ validationErrors.address }}
+            </small>
+          </div>
+
+          <!-- Department -->
+          <div class="form-group">
+            <label class="form-label required">Khoa</label>
+            <select 
+              class="form-input"
+              [class.error]="validationErrors.departmentId"
+              [(ngModel)]="currentTeacher.departmentId"
+              name="departmentId"
+            >
+              <option value="">-- Chọn khoa --</option>
+              <option *ngFor="let dept of departments" [value]="dept.departmentId">
+                {{ dept.departmentName }}
+              </option>
+            </select>
+            <small class="error-text" *ngIf="validationErrors.departmentId">
+              {{ validationErrors.departmentId }}
+            </small>
+          </div>
+
+          <!-- Username -->
+          <div class="form-group">
+            <label class="form-label required">Tên Đăng Nhập</label>
+            <input 
+              type="text" 
+              class="form-input"
+              [class.error]="validationErrors.username"
+              [(ngModel)]="currentTeacher.username"
+              name="username"
+              maxlength="50"
+              [disabled]="isEditMode"
+              placeholder="Nhập tên đăng nhập"
+            />
+            <small class="error-text" *ngIf="validationErrors.username">
+              {{ validationErrors.username }}
+            </small>
+          </div>
+
+          <!-- Password (only for new teachers) -->
+          <div class="form-group" *ngIf="!isEditMode">
+            <label class="form-label required">Mật Khẩu</label>
+            <input 
+              type="password" 
+              class="form-input"
+              [class.error]="validationErrors.password"
+              [(ngModel)]="currentTeacher.password"
+              name="password"
+              maxlength="100"
+              placeholder="Nhập mật khẩu"
+            />
+            <small class="error-text" *ngIf="validationErrors.password">
+              {{ validationErrors.password }}
+            </small>
+          </div>
+        </div>
+      </form>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="closeModal()">
+        ❌ Hủy
+      </button>
+      <button class="btn btn-primary" (click)="saveTeacher()" [disabled]="isLoading">
+        <span *ngIf="!isLoading">
+          <i class="icon">{{ isEditMode ? '💾' : '➕' }}</i>
+          {{ isEditMode ? 'Cập nhật' : 'Thêm mới' }}
+        </span>
+        <span *ngIf="isLoading">Đang xử lý...</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div class="modal-overlay" *ngIf="showDeleteConfirm" (click)="cancelDelete()">
+  <div class="modal-content modal-small" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2 class="modal-title">
+        <i class="icon">⚠️</i>
+        Xác Nhận Xóa
+      </h2>
+      <button class="modal-close" (click)="cancelDelete()">×</button>
+    </div>
+
+    <div class="modal-body">
+      <p class="confirm-message">
+        Bạn có chắc chắn muốn xóa giáo viên này không?
+      </p>
+      <p class="warning-text">
+        ⚠️ Thao tác này không thể hoàn tác!
+      </p>
+    </div>
+
+    <div class="modal-footer">
+      <button class="btn btn-secondary" (click)="cancelDelete()">
+        ❌ Hủy
+      </button>
+      <button class="btn btn-danger" (click)="deleteTeacher()" [disabled]="isLoading">
+        <span *ngIf="!isLoading">🗑️ Xóa</span>
+        <span *ngIf="isLoading">Đang xóa...</span>
+      </button>
+    </div>
+  </div>
+</div>
